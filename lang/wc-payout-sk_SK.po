@@ -1,0 +1,110 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Payout Gateway\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-11-07 10:30+0000\n"
+"PO-Revision-Date: 2019-11-07 10:31+0000\n"
+"Last-Translator: seducoadmin <test@seduco.sk>\n"
+"Language-Team: Slovenčina\n"
+"Language: sk_SK\n"
+"Plural-Forms: nplurals=3; plural=( n == 1 ) ? 0 : ( n >= 2 && n <= 4 ) ? 1 : "
+"2;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.3.1; wp-5.2.4"
+
+#: payout-gateway.php:65
+msgid "Settings"
+msgstr "Nastavenia"
+
+#: payout-gateway.php:86
+msgid "Payout"
+msgstr ""
+
+#: payout-gateway.php:87
+msgid "Payout gateway integration."
+msgstr "Integrácia platobnej brány Payout."
+
+#: payout-gateway.php:206
+msgid "Gateway allow"
+msgstr "Povoliť bránu"
+
+#: payout-gateway.php:208
+msgid "Allow gateway"
+msgstr "Povoliť bránu"
+
+#: payout-gateway.php:213
+msgid "Gateway name"
+msgstr "Názov brány"
+
+#: payout-gateway.php:215
+msgid ""
+"This controls the title for the payment method the customer sees during "
+"checkout."
+msgstr "Nastavenie pre názov spôsobu platby, ktorý zákazník vidí počas platby."
+
+#: payout-gateway.php:221
+msgid "Status"
+msgstr "Status"
+
+#: payout-gateway.php:225
+msgid "Test"
+msgstr "Testovacia prevádzka"
+
+#: payout-gateway.php:226
+msgid "Production"
+msgstr "Produkčná verzia"
+
+#: payout-gateway.php:232
+msgid "Client ID"
+msgstr ""
+
+#: payout-gateway.php:234
+msgid "Your Cilent ID"
+msgstr "Vaše Client ID"
+
+#: payout-gateway.php:240
+msgid "Client Secret"
+msgstr ""
+
+#: payout-gateway.php:242
+msgid "Your Client Secret"
+msgstr "Váš Clien Secret"
+
+#: payout-gateway.php:247
+msgid "Description"
+msgstr "Popis"
+
+#: payout-gateway.php:249
+msgid "Payment method description that the customer will see on your checkout."
+msgstr "Popis spôsobu platby, ktorý sa zákazníkovi zobrazí pri vašej pokladni."
+
+#: payout-gateway.php:254
+msgid "Instructions"
+msgstr "Inštrukcie"
+
+#: payout-gateway.php:256
+msgid "Instructions that will be added to the thank you page and emails."
+msgstr "Pokyny, ktoré sa pridajú na stránku s poďakovaním a do e-mailov."
+
+#. Name of the plugin
+msgid "Payout Gateway"
+msgstr "Payout - platobná brána"
+
+#. Description of the plugin
+msgid "Official Payout gateway plugin for WooCommerce."
+msgstr "Oficiálny zásuvný modul pre platobnú bránu Payout pre WooCommerce."
+
+#. URI of the plugin
+msgid "https://www.payout.one/"
+msgstr ""
+
+#. Author of the plugin
+msgid "Seduco"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://www.seduco.sk/"
+msgstr ""

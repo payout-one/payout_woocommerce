@@ -141,7 +141,7 @@ function wc_payout_gateway_init() {
 
 
 
-     		 if ($order->get_payment_method() == "payout_gateway") {
+     		 if ($order->get_payment_method() == $this->id) {
       	
 	   
 				if ($store_payout_order_status == "succeeded" || $store_payout_order_status == "successful") { 

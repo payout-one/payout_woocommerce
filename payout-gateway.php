@@ -5,7 +5,7 @@
  * Description: Official Payout gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.0.0
+ * Version: 1.0.1
  * Text Domain: wc-payout
  *
  * Domain Path: /lang

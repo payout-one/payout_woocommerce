@@ -84,7 +84,7 @@ function wc_payout_gateway_init() {
 			$this->id                 = 'payout_gateway';
 			$this->has_fields         = false;
 			$this->method_title       = __( 'Payout', 'wc-payout' );
-			$this->method_description = __( 'Payout gateway integration.', 'wc-payout' );
+			$this->method_description = __( 'Payout gateway integration.', 'wc-payout' ). '<br><h3> <strong style="color:green;">'. __( "Plugin notification URL: ", 'payout' ). '</strong>' . home_url() . '</h3>';
 		  
 			// Load the settings.
 			$this->init_form_fields();
@@ -186,12 +186,6 @@ function wc_payout_gateway_init() {
 	  
 			$this->form_fields = apply_filters( 'payout_gateway_form_fields', array(
 
-				'notifyrl' => array(
-          'title' => 'Notification URL',
-          'type' => 'text',
-          'default' => add_query_arg('wc-api', 'payout_gateway', home_url()),
-          'custom_attributes' => array('readonly' => 'readonly')
-        ),
 		  
 				'enabled' => array(
 					'title'   => __( 'Gateway allow', 'wc-payout' ),

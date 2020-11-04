@@ -1,20 +1,19 @@
 <?php
 /**
- * Plugin Name: Payout Gateway
+ * Plugin Name: Payout payment gateway
  * Plugin URI: https://www.payout.one/
- * Description: Official Payout gateway plugin for WooCommerce.
+ * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.0.1
- * Text Domain: wc-payout
+ * Version: 1.0.5
+ * Text Domain: payout-payment-gateway
+ * Domain Path: languages
+ * Copyright (c) 2020, Seduco
  *
- * Domain Path: /lang
- * Copyright (c) 2019, Seduco
- *
- * @package   wc-payout
+ * @package   payout-payment-gateway
  * @author    Seduco
  * @category  Admin
- * @copyright Copyright (c) 2019, Seduco
+ * @copyright Copyright (c) 2020, Seduco
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  *
  */
@@ -28,21 +27,38 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 }
 
 
-load_plugin_textdomain( 'wc-payout', false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
+
 
 
 // Payout API
 
 $plugin_dir = plugin_dir_path(__FILE__);
 
-require($plugin_dir . '/Payout/Client.php');
-require($plugin_dir . '/Payout/Connection.php');
-require($plugin_dir . '/Payout/Checkout.php');
+require($plugin_dir . '/lib/Payout/Client.php');
+require($plugin_dir . '/lib/Payout/Connection.php');
+require($plugin_dir . '/lib/Payout/Checkout.php');
 
 
 
 use Payout\Client;
 
+function payout_load_plugin_textdomain() {
+
+	// Load translations from the languages directory.
+	$locale = get_locale();
+
+	// This filter is documented in /wp-includes/l10n.php.
+	$locale = apply_filters( 'plugin_locale', $locale, 'payout-payment-gateway' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
+
+
+	load_textdomain( 'payout-payment-gateway', plugin_dir_path(__FILE__) . 'languages/payout-payment-gateway-' . $locale . '.mo' );
+
+	load_plugin_textdomain( 'payout-payment-gateway', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+
+
+  
+}
+add_action( 'plugins_loaded', 'payout_load_plugin_textdomain' );
 
 
 
@@ -62,7 +78,7 @@ add_filter( 'woocommerce_payment_gateways', 'wc_payout_add_to_gateways' );
 function wc_payout_gateway_plugin_links( $links ) {
 
 	$plugin_links = array(
-		'<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=payout_gateway' ) . '">' . __( 'Settings', 'wc-payout' ) . '</a>'
+		'<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=payout_gateway' ) . '">' . __( 'Settings', 'payout-payment-gateway' ) . '</a>'
 	);
 
 	return array_merge( $plugin_links, $links );
@@ -74,17 +90,23 @@ add_action( 'plugins_loaded', 'wc_payout_gateway_init', 11 );
 
 function wc_payout_gateway_init() {
 
+
+
+
 	class WC_Payout_Gateway extends WC_Payment_Gateway {
 
 		/**
 		 * Constructor for the gateway.
 		 */
 		public function __construct() {
+
+
+			
 	  
 			$this->id                 = 'payout_gateway';
 			$this->has_fields         = false;
-			$this->method_title       = __( 'Payout', 'wc-payout' );
-			$this->method_description = __( 'Payout gateway integration.', 'wc-payout' ). '<br><strong style="color:green;">'. __( "Notification URL: ", 'payout' ). '</strong>' . add_query_arg('wc-api', 'payout_gateway', home_url());
+			$this->method_title       = __( 'Payout', 'payout-payment-gateway' );
+			$this->method_description = __( 'Payout gateway integration.', 'payout-payment-gateway' ). '<br><strong style="color:green;">'. __( 'Notification URL: ', 'payout-payment-gateway' ). '</strong>' . add_query_arg('wc-api', 'payout_gateway', home_url().'/');
 		  
 			// Load the settings.
 			$this->init_form_fields();
@@ -94,6 +116,9 @@ function wc_payout_gateway_init() {
 			$this->title        = $this->get_option( 'title' );
 			$this->description  = $this->get_option( 'description' );
 			$this->instructions = $this->get_option( 'instructions', $this->description );
+
+
+			 add_action('woocommerce_update_options_payment_gateways', array($this, 'gateway_info'));
 		  
 			// Actions
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -102,9 +127,21 @@ function wc_payout_gateway_init() {
 		
 			add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
 
+			
+			//Will be enabled in next release
+			
+			//add_action( 'woocommerce_order_refunded', array($this,'action_woocommerce_order_refunded'), 10, 2 );
+
+
 
 			add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ), 10, 3 );
 		}
+
+
+     
+
+
+
 
 
 		function payout_callback() {
@@ -121,51 +158,56 @@ function wc_payout_gateway_init() {
 		    // Initialize Payout
 		    $payout = new Client($config);
 
-		    
-	
+
 
 		    $external_id = $notification->external_id;
 		    $store_payout_order_status = $notification->data->status;
+		    $payout_checkout_id = $notification->data->id;
 
 			if (isset($external_id) && isset($store_payout_order_status)) {
 		   		if (!$payout->verifySignature(array($external_id, $notification->type, $notification->nonce), $notification->signature)) {
 
-		          die();
+ 					$result = array('error' => "Bad signature");
+					header_remove();	    
+					header('Content-Type: application/json');  
+					http_response_code(401);
+					echo json_encode($result, true);    
+					exit();
+
+
 		    } 
 
 
 		   	$order = wc_get_order( $external_id);
 			
 		  	update_post_meta($external_id, 'payout_order_status', $store_payout_order_status);
+		  	update_post_meta($external_id, 'payout_checkout_id', $payout_checkout_id);
 
 
 
 
-     		 if ($order->get_payment_method() == $this->id) {
-      	
-	   
-				if ($store_payout_order_status == "succeeded" || $store_payout_order_status == "successful") { 
+  
+			if ($store_payout_order_status == "succeeded") { 
 
-					$order->payment_complete();
-			
+				$order->payment_complete();
+		
 
-				} else if ($store_payout_order_status == "in_transit" || $store_payout_order_status == "processing" || $store_payout_order_status == "pending") {
+			} else if ($store_payout_order_status == "expired") {
 
-					$order->update_status('on-hold' , 'Payout : on-hold');
+				$order->update_status('failed' , 'Payout : failed');
 
-				} else if ($store_payout_order_status == "refunded") {
+				
 
-					$order->update_status('refunded', 'Payout : refunded');
+			} else {
 
-				} else {
+				$order->update_status('on-hold' , 'Payout : on-hold');
 
-					$order->update_status('failed' , 'Payout : failed');
+				
 
-				}
+			}
 
 
-
-			 }
+			 
 
 
 			
@@ -175,70 +217,83 @@ function wc_payout_gateway_init() {
 
 		}
 
-		
 
+	
 
+	
 			
 		/**
 		 * Initialize Gateway Settings Form Fields
 		 */
 		public function init_form_fields() {
+
+
+      
 	  
 			$this->form_fields = apply_filters( 'payout_gateway_form_fields', array(
 
-		  
+
+
+	
 				'enabled' => array(
-					'title'   => __( 'Gateway allow', 'wc-payout' ),
+					'title'   => __( 'Gateway allow', 'payout-payment-gateway' ),
 					'type'    => 'checkbox',
-					'label'   => __( 'Allow gateway', 'wc-payout' ),
+					'label'   => __( 'Allow gateway', 'payout-payment-gateway' ),
 					'default' => 'yes'
 				),
+
+				'payment_id' => array(
+					'title'       => __( 'Payment method', 'payout-payment-gateway' ),
+					'type'        => 'text',
+				),
+
 				
 				'title' => array(
-					'title'       => __( 'Gateway name', 'wc-payout' ),
+					'title'       => __( 'Gateway name', 'payout-payment-gateway' ),
 					'type'        => 'text',
-					'description' => __( 'This controls the title for the payment method the customer sees during checkout.', 'wc-payout' ),
+					'description' => __( 'This controls the title for the payment method the customer sees during checkout.', 'payout-payment-gateway' ),
 					'desc_tip'    => true,
 				),
 
+			
 
 				 'sandbox' => array(
-		          'title' => __('Status', 'wc-payout'),
+		          'title' => __('Status', 'payout-payment-gateway'),
 		          'type' => 'select',
 		          'description' => '',
 		          'options' => array(
-		            true => __('Test', 'wc-payout'),
-		            false => __('Production', 'wc-payout')
+		            true => __('Test', 'payout-payment-gateway'),
+		            false => __('Production', 'payout-payment-gateway')
 		          ),
 		          'default' => true
 		        ),
 
 				'client_id' => array(
-					'title'       => __( 'Client ID', 'wc-payout' ),
+					'title'       => __( 'Client ID', 'payout-payment-gateway' ),
 					'type'        => 'text',
-					'description' => __( 'Your Cilent ID', 'wc-payout' ),
+					'description' => __( 'Your Cilent ID', 'payout-payment-gateway' ),
 					'desc_tip'    => true,
 				),
 
 
 				'client_secret' => array(
-					'title'       => __( 'Client Secret', 'wc-payout' ),
+					'title'       => __( 'Client Secret', 'payout-payment-gateway' ),
 					'type'        => 'text',
-					'description' => __( 'Your Client Secret', 'wc-payout' ),
+					'description' => __( 'Your Client Secret', 'payout-payment-gateway' ),
 					'desc_tip'    => true,
 				),
 				
 				'description' => array(
-					'title'       => __( 'Description', 'wc-payout' ),
+					'title'       => __( 'Description', 'payout-payment-gateway' ),
 					'type'        => 'textarea',
-					'description' => __( 'Payment method description that the customer will see on your checkout.', 'wc-payout' ),
+					'description' => __( 'Payment method description that the customer will see on your checkout.', 'payout-payment-gateway' ),
 					'desc_tip'    => true,
 				),
 				
 				'instructions' => array(
-					'title'       => __( 'Instructions', 'wc-payout' ),
+					'title'       => __( 'Instructions', 'payout-payment-gateway' ),
 					'type'        => 'textarea',
-					'description' => __( 'Instructions that will be added to the thank you page and emails.', 'wc-payout' ),
+					'description' => __( 'Instructions that will be added to the thank you page and emails.', 'payout-payment-gateway' ),
 					'default'     => '',
 					'desc_tip'    => true,
 				),
@@ -256,6 +311,8 @@ function wc_payout_gateway_init() {
 		}
 
 
+	
+
 
 	
 	
@@ -268,11 +325,157 @@ function wc_payout_gateway_init() {
 				echo wpautop( wptexturize( $this->instructions ) ) . PHP_EOL;
 			}
 		}
-	
+
+
+
+
+		public function action_woocommerce_order_refunded( $order_id, $refund_id ) 
+		{ 
+				// Get neccesary data
+				$client_id = $this->get_option( 'client_id' );
+                $client_secret = $this->get_option( 'client_secret' );
+
+
+
+				
+
+		
+
+			    // Initialize Payout due to accessing get Signature function
+			    
+
+			    // Checkout id
+			    $checkout_id = get_post_meta( $order_id, 'payout_checkout_id', true);
+			
+				// nonce
+				$bytes = random_bytes(5);
+	            $nonce = bin2hex($bytes);
+
+
+	            // Statement - for now empty string
+	            $statement = "";
+
+
+	            // Order object - to exclude some data
+	            $order = wc_get_order( $order_id );
+
+
+	            // Necessary data for signature
+
+	            $amount = $order->get_total();
+	            $currency = $order->get_currency();
+	            $external_id = $order_id;
+
+	            // Temporrary assign there an order ID
+	            $iban = "";
+          
+
+                // Creating signature from neccesary data
+            	$string_to_hash = array($amount,$currency,$external_id,$iban,$nonce,$client_secret);
+            	$message = implode('|', $string_to_hash);
+           
+            	$signature = hash('sha256', pack('A*', $message));
+     			  
+
+
+
+            
+
+           
+
+	            // RETRIEVE AN SECURITY TOKEN
+
+
+
+
+                $body = [
+				    'client_id' => $client_id,
+				    'client_secret' => $client_secret,
+				   
+				];
+
+				$endpoint = ($this->get_option( 'sandbox' )) ? "https://sandbox.payout.one/api/v1/authorize" : "https://app.payout.one/api/v1/authorize";
+				
+				  
+				$body = wp_json_encode( $body );
+
+				$options = [
+				    'body'        => $body,
+				    'headers'     => [
+				        'Content-Type' => 'application/json',
+				        'Accept' => 'application/json'
+				    ],
+				    'timeout'     => 60,
+				    'method'     => 'POST',
+				    'redirection' => 5,
+				    'blocking'    => true,
+				    'httpversion' => '1.0',
+				    'sslverify'   => false,
+				    'data_format' => 'body',
+				];
+
+
+          
+
+				
+                $data = wp_remote_request( $endpoint, $options );
+                $decoded = json_decode($data['body']);
+
+              	$token = $decoded->token;
+
+
+
+              	// REFUND REQUEST
+
+
+                $body_r = [
+				    'checkout_id' => $checkout_id,
+				    'statement_descriptor' => $statement,
+				    'nonce' => $nonce,
+				    'signature' => $signature,
+				];
+
+				$endpoint_r = ($this->get_option( 'sandbox' )) ? "https://sandbox.payout.one/api/v1/refunds" : "https://app.payout.one/api/v1/refunds";
+				$basicauth = 'Bearer ' . $token; 
+				  
+				$body_r = wp_json_encode( $body_r );
+
+				$options_r = [
+				    'body'        => $body_r,
+				    'headers'     => [
+				        'Content-Type' => 'application/json',
+				        'Authorization' => $basicauth,
+				        'Accept' => 'application/json',
+				    ],
+				    'timeout'     => 60,
+				    'redirection' => 5,
+				    'blocking'    => true,
+				    'httpversion' => '1.0',
+				    'sslverify'   => false,
+				    'data_format' => 'body',
+				];
+
+
+          
+
+				
+                $data_r = wp_remote_post( $endpoint_r, $options_r );
+			
+		
+
+	     
+
+			
+
+
+		}
+			
 	
 		/**
 		 * Process the payment and return the result
 		 */
+
+
 		public function process_payment( $order_id ) {
 
 
@@ -307,21 +510,27 @@ function wc_payout_gateway_init() {
 
 
 			    	
-
-						
-
 			    $response = $payout->createCheckout($checkout_data);
 			   
 
-				 if ($response->status == "processing") {
-				    	$order->update_status('pending');
-				  }
+				if ($response->status == "processing") {
+				    $order->update_status('pending');
+				}
+
+
+				$redirect_url = $response->checkout_url;
+				$payment_id = $this->get_option( 'payment_id' );
+
+
+				if ($payment_id != "") {
+					  $redirect_url = $response->checkout_url.'?payment_method='.$payment_id;
+				}	  
 
 
 
 			   return array(
 						'result' => 'success',
-						'redirect' => $response->checkout_url,
+						'redirect' => $redirect_url,
 				);
 
 
@@ -333,8 +542,7 @@ function wc_payout_gateway_init() {
 
 
 				
-					
-						
+							
 				
 			
 		}
@@ -345,50 +553,177 @@ function wc_payout_gateway_init() {
 
 
 
-add_action( 'template_redirect', 'payout_response_redirect' );
- 
-function payout_response_redirect(){
- 
-	/* do nothing if we are not on the appropriate page */
-	if( !is_wc_endpoint_url( 'order-received' ) || empty( $_GET['key'] ) ) {
-		return;
-	}
- 
-	$order_id = wc_get_order_id_by_order_key( $_GET['key'] );
-	$order = wc_get_order( $order_id );
 
 
 
+add_action( 'woocommerce_thankyou', 'insert_script_payout' );
 
+function insert_script_payout($oid) {
+
+	$order = wc_get_order( $oid );
+	
 
 
 	if( 'payout_gateway' == $order->get_payment_method() ) { /* WC 3.0+ */
 
 
-		$payout_order_status = get_post_meta( $order_id, 'payout_order_status', true);
-
- 			// expired , failed , processing, in_transit
-
-			if ($payout_order_status == "succeeded" || $payout_order_status == "successful" || $payout_order_status == "pending" || $payout_order_status == "in_transit" || $payout_order_status == "processing" || $payout_order_status == "refunded") {
-				return;
-			} else {
-			   $redirect = $order->get_checkout_payment_url();
-			   wp_redirect(  $redirect );
-			}
-
-		
-		
-		exit;
-
-
-	} else {
-
-		return;
-	
-	}
-
+		$payment_url = $order->get_checkout_payment_url();
 
 	
+	?> 
+			<script>
+
+				 jQuery(document).ready(function($) {
+
+
+   	
+				 	 jQuery('.woocommerce-order').addClass( 'processing' ).block( {
+		                message: null,
+		                overlayCSS: {
+		                    background: '#fff',
+		                    opacity: .25
+		                }
+		            } );
+
+				 	 jQuery('.woocommerce-order').css('opacity', '1');
+				 	 jQuery('.woocommerce-order > *').css('opacity', '0');
+				 	 
+
+					
+
+
+
+				  var counter = 0;
+				  var checkingTime = 5;
+				  var checkInterval = 1000;
+				  var oid = '<?php echo $oid;  ?>';
+
+			
+				 		
+				   	$params={
+				     action:'checkOrderStatus',
+				     oid: oid,
+	
+				    
+				   }
+
+
+				  
+
+				   	var checkingInterval =  setInterval(function(){ 
+
+
+
+					$.ajax({
+				         type: "POST",
+				         dataType: "html",
+				         url: "<?php echo admin_url( 'admin-ajax.php' ) ?>",
+				         data: $params,
+				         success: function(data){
+
+				         	 if ( (data == "succeeded") || data == "processing" ) {
+				         	 	clearInterval(checkingInterval);
+				         	 	jQuery('.woocommerce-order').addClass( 'done' ).unblock();
+				         	 	 jQuery('.woocommerce-order > *').css('opacity', '1');
+				         	 }
+
+				             //console.log(data);
+
+				             counter++;
+
+				             // Redirect to payment URL if response is different than "succeeded" or "processing"
+
+				             if ((counter > checkingTime) ) {
+							   	clearInterval(checkingInterval);
+							   	window.location.replace('<?php echo $payment_url; ?>');
+							 }
+						
+				         },
+				         error : function(jqXHR, textStatus, errorThrown) {
+				             console.log('Cannot retrieve data.');
+				         }
+				 
+				     });
+
+						}, checkInterval);
+
+
+				   	});
+				 
+				     
+			
+
+
+	
+			</script>
+
+
+
+		
+
+		<?php 
+
+		}
+}
+
+
+function checkOrderStatus() {
+
+
+    $oid = $_POST["oid"];
+    echo get_post_meta( $oid, 'payout_order_status', true);
+    
+    die();
+}
+add_action( 'wp_ajax_nopriv_checkOrderStatus', 'checkOrderStatus' );
+add_action( 'wp_ajax_checkOrderStatus', 'checkOrderStatus' );
+
+
+
+add_action( 'template_redirect', 'payout_response_redirect' );
  
 
-}
+function payout_response_redirect(){
+
+	/* do nothing if we are not on the appropriate page */
+	if ( ! is_wc_endpoint_url( 'order-received' ) ) return; 
+
+	global $wp;
+
+	$order_id = $wp->query_vars['order-received'];
+	$order = wc_get_order( $order_id );
+
+
+    
+ 
+
+
+	if( 'payout_gateway' == $order->get_payment_method() ) { 
+
+
+
+    	add_action( 'wp_head', 'payout_temporary_style' );
+   
+
+	} 
+	
+ 
+  }
+
+
+function payout_temporary_style() {  ?> 
+
+
+
+      <style>
+      	.woocommerce-order {
+      		opacity: 0;
+      	}
+      </style>
+
+      <?php 
+} 
+
+
+
+

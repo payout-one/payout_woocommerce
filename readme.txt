@@ -3,7 +3,7 @@ Contributors: Seduco
 Tags: payout, gateway, slovakia, payment, payment gateway, platobná brána, payout payment gateway
 Requires at least: 4.0
 Tested up to: 5.4.1
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 Donate link: https://payout.one/sk/
 Requires PHP: 7.0
 License: GPLv2 or later
@@ -28,7 +28,7 @@ Hlavné črty:
 2. Aktivujte plugin
 3. Prejdite na nastavenia platieb WooCommerce a aktivujte platobnú bránu prepínačom
 4. V nastaveniach danej platobnej metódy vyplňte informácie potrebné k spusteniu platobnej brány (informácie potrebné k vyplneniu nájdete vo svojom účte na https://app.payout.one)
-5. Vytvorte testovaciu objednávku a skontrolujte funkčnosť
+5. Vytvorte testovaciu objednávku a skontrolujte funkčnosť.
 
 == Frequently Asked Questions ==
 Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázky.
@@ -39,6 +39,9 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 3. Rozhranie platobnej brány
 
 == Changelog ==
+= 1.0.6 =
+* Added condition: Possibility to make a payment only if the value of the order is higher than 0.
+
 = 1.0.5 =
 * Code improvements
 

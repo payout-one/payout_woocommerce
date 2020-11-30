@@ -5,7 +5,7 @@
  * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.0.6
+ * Version: 1.0.7
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2020, Seduco
@@ -245,6 +245,14 @@ function wc_payout_gateway_init() {
 				'payment_id' => array(
 					'title'       => __( 'Payment method', 'payout-payment-gateway' ),
 					'type'        => 'text',
+				),
+
+
+				'language' => array(
+					'title'       => __( 'Language', 'payout-payment-gateway' ),
+					'type'        => 'text',
+					'description' => __( 'For example: sk,en', 'payout-payment-gateway'  ),
+					'desc_tip'    => true,
 				),
 
 				
@@ -532,11 +540,25 @@ function wc_payout_gateway_init() {
 
 				$redirect_url = $response->checkout_url;
 				$payment_id = $this->get_option( 'payment_id' );
+				$language = $this->get_option( 'language' );
 
 
 				if ($payment_id != "") {
 					  $redirect_url = $response->checkout_url.'?payment_method='.$payment_id;
-				}	  
+				}
+
+				if ($language != "") {
+					  $redirect_url = $response->checkout_url.'?locale='.$language;
+				}
+
+
+				$stored_redirect_url = get_post_meta( $order_id, 'payout_redirect_url', true );
+				if ($stored_redirect_url) {
+					$redirect_url = $stored_redirect_url;
+				}
+
+
+				update_post_meta($order_id, 'payout_redirect_url', $redirect_url);	  
 
 
 

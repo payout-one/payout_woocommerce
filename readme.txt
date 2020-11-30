@@ -39,6 +39,10 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 3. Rozhranie platobnej brány
 
 == Changelog ==
+= 1.0.7 =
+* Prevent creating duplicate checkout on Payout side
+* Added setting field for language parameter
+
 = 1.0.6 =
 * Added condition: Possibility to make a payment only if the value of the order is higher than 0.
 

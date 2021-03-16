@@ -5,11 +5,12 @@
  * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.0.7
+ * Version: 1.0.8
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2020, Seduco
- *
+ * WC tested up to: 5.1.0
+ * WC requires at least: 3.0.0
  * @package   payout-payment-gateway
  * @author    Seduco
  * @category  Admin
@@ -128,9 +129,7 @@ function wc_payout_gateway_init() {
 			add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
 
 			
-			//Will be enabled in next release
-			
-			//add_action( 'woocommerce_order_refunded', array($this,'action_woocommerce_order_refunded'), 10, 2 );
+			add_action( 'woocommerce_order_refunded', array($this,'action_woocommerce_order_refunded'), 10, 2 );
 
 
 
@@ -146,8 +145,20 @@ function wc_payout_gateway_init() {
 
 		function payout_callback() {
 
+
+
 		 	$notification = json_decode(file_get_contents('php://input'));
 
+
+		 	$debug = $this->get_option( 'debug' );
+
+			if ($debug == "yes") {
+				$logger = wc_get_logger();
+				$logger->log( 'payout_log', 'NOTIFICATION: ' . json_encode($notification)  );
+			}
+
+
+		
 
 		    $config = array(
 		        'client_id' => $this->get_option( 'client_id' ),
@@ -163,6 +174,8 @@ function wc_payout_gateway_init() {
 		    $external_id = $notification->external_id;
 		    $store_payout_order_status = $notification->data->status;
 		    $payout_checkout_id = $notification->data->id;
+
+
 
 			if (isset($external_id) && isset($store_payout_order_status)) {
 		   		if (!$payout->verifySignature(array($external_id, $notification->type, $notification->nonce), $notification->signature)) {
@@ -183,22 +196,33 @@ function wc_payout_gateway_init() {
 		  	update_post_meta($external_id, 'payout_order_status', $store_payout_order_status);
 		  	update_post_meta($external_id, 'payout_checkout_id', $payout_checkout_id);
 
+		  	$current_order_status = $order->get_status();
 
 
+		  	if ($debug == "yes") {
+				$logger->log( 'payout_log', 'STATUS: ' . json_encode($store_payout_order_status)  );
+			}
 
+		  	
   
 			if ($store_payout_order_status == "succeeded") { 
 
-				$order->payment_complete();
 		
+	
+			    $order->payment_complete();
+
 
 			} else if ($store_payout_order_status == "expired") {
+
+				
 
 				$order->update_status('failed' , 'Payout : failed');
 
 				
 
 			} else {
+
+				
 
 				$order->update_status('on-hold' , 'Payout : on-hold');
 
@@ -305,6 +329,14 @@ function wc_payout_gateway_init() {
 					'default'     => '',
 					'desc_tip'    => true,
 				),
+
+
+				'debug' => array(
+					'title'   => __( 'Debug', 'payout-payment-gateway' ),
+					'type'    => 'checkbox',
+						'label'   => __( 'Allow', 'payout-payment-gateway' ),
+					'default' => 'no'
+				),
 			) );
 		}
 	
@@ -339,6 +371,13 @@ function wc_payout_gateway_init() {
 
 		public function action_woocommerce_order_refunded( $order_id, $refund_id ) 
 		{ 
+
+			 
+           
+          
+     			  
+
+
 				// Get neccesary data
 				$client_id = $this->get_option( 'client_id' );
                 $client_secret = $this->get_option( 'client_secret' );
@@ -370,7 +409,7 @@ function wc_payout_gateway_init() {
 
 	            // Necessary data for signature
 
-	            $amount = $order->get_total();
+	            $amount = bcmul($order->get_total(), 100);
 	            $currency = $order->get_currency();
 	            $external_id = $order_id;
 
@@ -381,7 +420,10 @@ function wc_payout_gateway_init() {
                 // Creating signature from neccesary data
             	$string_to_hash = array($amount,$currency,$external_id,$iban,$nonce,$client_secret);
             	$message = implode('|', $string_to_hash);
-           
+
+
+
+
             	$signature = hash('sha256', pack('A*', $message));
      			  
 
@@ -429,6 +471,10 @@ function wc_payout_gateway_init() {
                 $data = wp_remote_request( $endpoint, $options );
                 $decoded = json_decode($data['body']);
 
+       
+
+
+
               	$token = $decoded->token;
 
 
@@ -468,6 +514,8 @@ function wc_payout_gateway_init() {
 
 				
                 $data_r = wp_remote_post( $endpoint_r, $options_r );
+
+
 			
 		
 
@@ -484,7 +532,7 @@ function wc_payout_gateway_init() {
 		 */
 
 
-		public function process_payment( $order_id ) {
+		public function process_payment( $order_id ) {      
 
 
 			try {
@@ -503,19 +551,76 @@ function wc_payout_gateway_init() {
 			     $billingData = $order->get_address();
 
 
+		
+				$first_name = $order->get_billing_first_name();
+				$last_name = $order->get_billing_last_name();
+
+
+
+				$products = array();
+
+
+   
+				 // Get and Loop Over Order Items
+				foreach ( $order->get_items() as $item_id => $item ) {
+
+
+						$product = $item->get_product();
+
+			            $product_data = [
+			            'name' => $item->get_name(),
+			            'quantity' => $item->get_quantity(),
+			            'unit_price' => bcmul($product->get_price(), 100),
+
+			            ];
+			            array_push($products, $product_data );
+				 
+				  
+				}
+
+
+			
+
+
 			    // Create checkout
 			    $checkout_data = array(
 			        'amount' => $order->get_total(),
 			        'currency' => $order->get_currency(),
 			        'customer' => [
-			            'first_name' => $order->get_billing_first_name(),
-			            'last_name' => $order->get_billing_last_name(),
+			            'first_name' => $first_name,
+			            'last_name' => $last_name,
 			            'email' => $order->get_billing_email()
 			        ],
+			        'products' => $products,
+			        'billing_addresss' => [
+			            'address_line_1' => $order->get_billing_address_1(),
+			            'address_line_2' => $order->get_billing_address_2(),
+			            'city' => $order->get_billing_city(),
+			            'country_code' => $order->get_billing_country(),
+			            'name'  => $first_name.'&nbsp;'.$last_name,
+			            'postal_code'  => $order->get_billing_postcode(),
+			     
+			        ],
+			 
 			        'external_id' => $order->get_id(),
 			        'redirect_url' =>  $this->get_return_url($order)
 			    );
 
+
+			     if ($order->get_shipping_address_1()) {
+		            $checkout_data['shipping_address'] = [
+			            'address_line_1' => $order->get_shipping_address_1(),
+			            'address_line_2' => $order->get_shipping_address_2(),
+			            'city' => $order->get_shipping_city(),
+			            'country_code' => $order->get_shipping_country(),
+			            'name'  => $first_name.'&nbsp;'.$last_name,
+			            'postal_code'  => $order->get_shipping_postcode(),
+			     
+			        ];
+		        }
+
+
+		
 
 
 			    if ($order->get_total() == 0 ) {
@@ -526,14 +631,34 @@ function wc_payout_gateway_init() {
 			    }
 
 
-			   
+			   	$debug = $this->get_option( 'debug' );
 
 
 			    	
 			    $response = $payout->createCheckout($checkout_data);
+			    if ($debug == "yes") {
+						$logger = wc_get_logger();
+						$logger->log( 'payout_log',  'CHECKOUT_DATA: ' . json_encode($checkout_data)  );
+						$logger->log( 'payout_log',  'RESPONSE_PAYOUT: ' . json_encode($response)  );
+				}
+
+
+
+
 			   
 
 				if ($response->status == "processing") {
+
+
+					
+
+					if ($debug == "yes") {
+						
+						$logger->log( 'payout_log',  'STATUS: pending'  );
+					}
+
+			
+
 				    $order->update_status('pending');
 				}
 
@@ -594,8 +719,14 @@ add_action( 'woocommerce_thankyou', 'insert_script_payout' );
 
 function insert_script_payout($oid) {
 
-	$order = wc_get_order( $oid );
-	
+	/* do nothing if we are not on the appropriate page */
+	if ( ! is_wc_endpoint_url( 'order-received' ) ) return; 
+
+	global $wp;
+
+	$order_id = $wp->query_vars['order-received'];
+	$order = wc_get_order( $order_id );
+
 
 
 	if( 'payout_gateway' == $order->get_payment_method() ) { /* WC 3.0+ */
@@ -759,5 +890,21 @@ function payout_temporary_style() {  ?>
 } 
 
 
+
+add_action('admin_footer', 'woo_admin_order_script');
+
+function woo_admin_order_script() {
+
+ $notice = __('Payout does not support refunds in this way. To transfer the refund to the Payout system, change the status of the order to refunded.','payout-payment-gateway');	
+
+  echo "<script>
+  	(function($) {
+  jQuery( '.post-type-shop_order .refund-items' ).click(function() {
+    alert('".$notice."');
+ 
+  });
+})(jQuery);
+  </script>";
+}
 
 

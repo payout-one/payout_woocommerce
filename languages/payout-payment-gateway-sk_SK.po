@@ -3,134 +3,124 @@ msgstr ""
 "Project-Id-Version: Payout payment gateway\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-30 12:03+0000\n"
-"PO-Revision-Date: 2020-11-30 12:03+0000\n"
-"Last-Translator: Seduco <info@seduco.sk>\n"
+"PO-Revision-Date: 2021-03-16 06:48+0000\n"
+"Last-Translator: \n"
 "Language-Team: Slovenčina\n"
-"Language: sk_SK\n"
+"Language: sk-SK\n"
 "Plural-Forms: nplurals=3; plural=( n == 1 ) ? 0 : ( n >= 2 && n <= 4 ) ? 1 : "
 "2;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.3.1; wp-5.2.9"
+"X-Loco-Version: 2.4.6; wp-5.6.2"
 
-#: payout-gateway.php:81
-msgid "Settings"
-msgstr "Nastavenia"
+msgid "Allow"
+msgstr "Povoliť"
 
-#: payout-gateway.php:108
-msgid "Payout"
-msgstr "Payout"
-
-#: payout-gateway.php:109
-msgid "Payout gateway integration."
-msgstr "Integrácia platobnej brány Payout."
-
-#: payout-gateway.php:109
-msgid "Notification URL: "
-msgstr "Notifikačná URL adresa:"
-
-#: payout-gateway.php:239
-msgid "Gateway allow"
-msgstr "Povoliť bránu"
-
-#: payout-gateway.php:241
 msgid "Allow gateway"
 msgstr "Povoliť bránu"
 
-#: payout-gateway.php:246
-msgid "Payment method"
-msgstr "Platobná metóda"
-
-#: payout-gateway.php:252
-msgid "Language"
-msgstr "Jazyk"
-
-#: payout-gateway.php:254
-msgid "For example: sk,en"
-msgstr "Napríklad: sk,en"
-
-#: payout-gateway.php:260
-msgid "Gateway name"
-msgstr "Názov brány"
-
-#: payout-gateway.php:262
-msgid ""
-"This controls the title for the payment method the customer sees during "
-"checkout."
-msgstr "Nastavenie pre názov spôsobu platby, ktorý zákazník vidí počas platby."
-
-#: payout-gateway.php:269
-msgid "Status"
-msgstr "Stav"
-
-#: payout-gateway.php:273
-msgid "Test"
-msgstr "Test"
-
-#: payout-gateway.php:274
-msgid "Production"
-msgstr "Produkcia"
-
-#: payout-gateway.php:280
 msgid "Client ID"
 msgstr "Kľúč"
 
-#: payout-gateway.php:282
-msgid "Your Cilent ID"
-msgstr "Váš kľúč"
-
-#: payout-gateway.php:288
 msgid "Client Secret"
 msgstr "Tajomstvo"
 
-#: payout-gateway.php:290
-msgid "Your Client Secret"
-msgstr "Vaše tajomstvo"
+msgid "Debug"
+msgstr ""
+"Režim záznamu chýb\n"
 
-#: payout-gateway.php:295
 msgid "Description"
 msgstr "Popis"
 
-#: payout-gateway.php:297
-msgid "Payment method description that the customer will see on your checkout."
-msgstr "Popis spôsobu platby, ktorý sa zákazníkovi zobrazí pri vašej pokladni."
+msgid "For example: sk,en"
+msgstr "Napríklad: sk,en"
 
-#: payout-gateway.php:302
-msgid "Instructions"
-msgstr "Inštrukcie"
+msgid "Gateway allow"
+msgstr "Povoliť bránu"
 
-#: payout-gateway.php:304
-msgid "Instructions that will be added to the thank you page and emails."
-msgstr "Pokyny, ktoré sa pridajú na stránku s poďakovaním a do e-mailov."
-
-#: payout-gateway.php:523
-#, php-format
-msgid "Payment gateway %s : Order value must be greater than 0."
-msgstr "Platobná brána %s : Hodnota objednávky musí byť vyššia ako 0."
-
-#: payout-gateway.php:572
-#, php-format
-msgid "Payment gateway %s : There is a problem, contact your webmaster."
-msgstr "Platobná brána %s : Vyskytol sa problém, kontaktuje správcu webu."
-
-#. Name of the plugin
-msgid "Payout payment gateway"
-msgstr "Payout platobná brána"
-
-#. Description of the plugin
-msgid "Official Payout payment gateway plugin for WooCommerce."
-msgstr "Oficiálny zásuvný modul pre platobnú bránu Payout pre WooCommerce."
+msgid "Gateway name"
+msgstr "Názov brány"
 
 #. URI of the plugin
 msgid "https://www.payout.one/"
 msgstr "https://www.payout.one/"
 
+#. Author URI of the plugin
+msgid "https://www.seduco.sk/"
+msgstr "https://www.seduco.sk/"
+
+msgid "Instructions"
+msgstr "Inštrukcie"
+
+msgid "Instructions that will be added to the thank you page and emails."
+msgstr "Pokyny, ktoré sa pridajú na stránku s poďakovaním a do e-mailov."
+
+msgid "Language"
+msgstr "Jazyk"
+
+msgid "Notification URL: "
+msgstr "Notifikačná URL adresa:"
+
+#. Description of the plugin
+msgid "Official Payout payment gateway plugin for WooCommerce."
+msgstr "Oficiálny zásuvný modul pre platobnú bránu Payout pre WooCommerce."
+
+#, php-format
+msgid "Payment gateway %s : Order value must be greater than 0."
+msgstr "Platobná brána %s : Hodnota objednávky musí byť vyššia ako 0."
+
+#, php-format
+msgid "Payment gateway %s : There is a problem, contact your webmaster."
+msgstr "Platobná brána %s : Vyskytol sa problém, kontaktuje správcu webu."
+
+msgid "Payment method"
+msgstr "Platobná metóda"
+
+msgid "Payment method description that the customer will see on your checkout."
+msgstr "Popis spôsobu platby, ktorý sa zákazníkovi zobrazí pri vašej pokladni."
+
+msgid "Payout"
+msgstr "Payout"
+
+msgid ""
+"Payout does not support refunds in this way. To transfer the refund to the "
+"Payout system, change the status of the order to refunded."
+msgstr ""
+"Payout nepodporuje refundáciu týmto spôsobom. Aby sa refundácia preniesla do "
+"systému Payout zmeňte stav objednávky na refundovaná."
+
+msgid "Payout gateway integration."
+msgstr "Integrácia platobnej brány Payout."
+
+#. Name of the plugin
+msgid "Payout payment gateway"
+msgstr "Payout platobná brána"
+
+msgid "Production"
+msgstr "Produkcia"
+
 #. Author of the plugin
 msgid "Seduco"
 msgstr "Seduco"
 
-#. Author URI of the plugin
-msgid "https://www.seduco.sk/"
-msgstr "https://www.seduco.sk/"
+msgid "Settings"
+msgstr "Nastavenia"
+
+msgid "Status"
+msgstr "Stav"
+
+msgid "Test"
+msgstr "Test"
+
+msgid ""
+"This controls the title for the payment method the customer sees during "
+"checkout."
+msgstr "Nastavenie pre názov spôsobu platby, ktorý zákazník vidí počas platby."
+
+msgid "Your Cilent ID"
+msgstr "Váš kľúč"
+
+msgid "Your Client Secret"
+msgstr "Vaše tajomstvo"

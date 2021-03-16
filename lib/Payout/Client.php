@@ -34,14 +34,14 @@ use Exception;
  * https://postman.payout.one/
  *
  * @package    Payout
- * @version    1.0.0
- * @copyright  2019 Payout, s.r.o.
+ * @version    1.0.1
+ * @copyright  2021 Payout, s.r.o.
  * @author     Neotrendy s. r. o.
  * @link       https://github.com/payout-one/payout_php
  */
 class Client
 {
-    const LIB_VER = '1.0.0';
+    const LIB_VER = '1.0.1';
     const API_URL = 'https://app.payout.one/api/v1/';
     const API_URL_SANDBOX = 'https://sandbox.payout.one/api/v1/';
 
@@ -182,14 +182,22 @@ class Client
         return $response;
     }
 
-
-    public function retrieveCheckout()
+    /**
+     * Get checkout details from API.
+     *
+     * @param integer $checkout_id
+     * @return mixed
+     * @throws Exception
+     */
+    public function getCheckout($checkout_id)
     {
-        
+        $url = 'checkouts/' . $checkout_id;
+        $response = $this->connection()->get($url);
 
-        $response = $this->connection()->get('checkouts', 22);
+        if (!$this->verifySignature(array($response->amount, $response->currency, $response->external_id, $response->nonce), $response->signature)) {
+            throw new Exception('Payout error: Invalid signature in API response.');
+        }
 
-       
         return $response;
     }
 }

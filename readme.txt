@@ -39,6 +39,9 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 3. Rozhranie platobnej brány
 
 == Changelog ==
+= 1.0.10 =
+* Prevent changing status if order is completed
+
 = 1.0.9 =
 * Code improvements
 

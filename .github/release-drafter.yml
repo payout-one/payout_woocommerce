@@ -1,0 +1,15 @@
+template: |
+  ## What’s Changed
+
+  $CHANGES
+categories:
+  - title: '🚀 Features'
+    label: 'feature'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'fix'
+      - 'bugfix'
+      - 'bug'
+  - title: ':package: Package Upgrades'
+    labels:
+      - 'dependencies'

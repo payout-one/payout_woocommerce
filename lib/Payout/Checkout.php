@@ -109,10 +109,10 @@ class Checkout
         if (isset($data['idempotency_key']) && is_array($data['idempotency_key'])) {
             $checkout_data['idempotency_key'] = $data['idempotency_key'];
         }
-        if (isset($data['mode']) && is_array($data['mode'])) {
+        if (isset($data['mode']) && is_string($data['mode'])) {
             $checkout_data['mode'] = $data['mode'];
         }
-        if (isset($data['recurrent_token']) && is_array($data['recurrent_token'])) {
+        if (isset($data['recurrent_token']) && is_string($data['recurrent_token'])) {
             $checkout_data['recurrent_token'] = $data['recurrent_token'];
         }
 

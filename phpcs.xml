@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/squizlabs/PHP_CodeSniffer/master/phpcs.xsd">
+
+	<!-- define path to installed WordPress standards -->
+	<config name="installed_paths" value="vendor/wp-coding-standards/wpcs" />
+
+	<!-- exclude the composer vendor directory. -->
+	<exclude-pattern>/vendor/*</exclude-pattern>
+
+	<!-- include the WordPress standard. -->
+	<rule ref="WordPress">
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found" />
+	</rule>
+
+</ruleset>

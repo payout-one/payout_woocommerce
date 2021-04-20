@@ -5,7 +5,7 @@
  * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.0.10
+ * Version: 1.0.11
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2020, Seduco
@@ -120,6 +120,21 @@ function wc_payout_gateway_init() {
 			add_action( 'woocommerce_order_refunded', array( $this, 'action_woocommerce_order_refunded' ), 10, 2 );
 
 			add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ), 10, 3 );
+
+			// WooCommerce Subscriptions support
+			$this->supports = array_merge(
+				$this->supports,
+				array(
+					'subscriptions',
+					'subscription_cancellation',
+					'subscription_suspension',
+					'subscription_reactivation',
+					'subscription_amount_changes',
+					'subscription_date_changes',
+					'multiple_subscriptions',
+				)
+			);
+			add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, array( $this, 'process_scheduled_subscription_payment' ), 10, 2 );
 		}
 
 		function payout_callback() {
@@ -152,6 +167,29 @@ function wc_payout_gateway_init() {
 			$signature_data = array( $notification->external_id, $notification->type, $notification->nonce );
 			if ( ! $payout->verifySignature( $signature_data, $notification->signature ) ) {
 				$this->notification_bail( 'Bad signature' );
+				exit();
+			}
+
+			// process payment token notification
+			if ( 'payu_token.created' === $notification->type && isset( $notification->data->token_value ) ) {
+				$subscription_ids = array_keys( wcs_get_subscriptions_for_order( $notification->external_id ) );
+				foreach ( $subscription_ids as $subscription_id ) {
+					update_post_meta( $subscription_id, '_payout_payment_token', $notification->data->token_value );
+				}
+				if ( $debug == 'yes' ) {
+					$logger->log(
+						'payout_log',
+						'PAYMENT TOKEN: based on paid order #' . $notification->external_id . ' token was saved to subscriptions ' . implode(
+							', ',
+							array_map(
+								function( $id ) {
+									return '#' . $id;
+								},
+								$subscription_ids
+							)
+						)
+					);
+				}
 				exit();
 			}
 
@@ -513,6 +551,11 @@ function wc_payout_gateway_init() {
 				$order         = wc_get_order( $order_id );
 				$checkout_data = $this->prepare_checkout_data( $order );
 
+				// add support for subscriptions... initial payment
+				if ( $this->order_contains_subscription( $order_id ) ) {
+						$checkout_data['mode'] = 'store_card';
+				}
+
 				$response = $this->create_payout_checkout( $order, $checkout_data );
 
 				$redirect_url = $response->checkout_url;
@@ -541,12 +584,44 @@ function wc_payout_gateway_init() {
 
 			} catch ( Exception $e ) {
 				if ( 'yes' === $this->get_option( 'debug' ) ) {
-					wc_get_logger()->log( 'payout_log', 'EXCEPTION: ' . $e->getMessage() );
+					wc_get_logger()->log( 'payout_log', 'Processing of regular payment has failed: ' . $e->getMessage() );
 				}
 				wc_add_notice( sprintf( __( 'Payment gateway %s : There is a problem, contact your webmaster.', 'payout-payment-gateway' ), $this->method_title ), 'error' );
 				return false;
 			}
 
+		}
+
+		/**
+		 * Check if order contains subscriptions
+		 *
+		 * @param $order the order.
+		 */
+		public function order_contains_subscription( $order ) {
+			return function_exists( 'wcs_order_contains_subscription' )
+				&& wcs_order_contains_subscription( $order );
+		}
+
+		/**
+		 * Process scheduled recurrent payment
+		 */
+		public function process_scheduled_subscription_payment( $amount, $order ) {
+			try {
+				$order_id      = $order->get_id();
+				$checkout_data = $this->prepare_checkout_data( $order );
+
+				$checkout_data['mode']            = 'recurrent';
+				$checkout_data['recurrent_token'] = get_post_meta( $order_id, '_payout_payment_token', true );
+
+				// common code for creating checkout via API
+				$response = $this->create_payout_checkout( $order, $checkout_data );
+
+				// there is no need to visit checkout url, the payment notification should arrive based on just checkout being created
+			} catch ( Exception $e ) {
+				if ( 'yes' === $this->get_option( 'debug' ) ) {
+					wc_get_logger()->log( 'payout_log', 'Processing of recurrent payment has failed: ' . $e->getMessage() );
+				}
+			}
 		}
 
 	}

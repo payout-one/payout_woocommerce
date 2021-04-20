@@ -142,21 +142,24 @@ function wc_payout_gateway_init() {
 			// Initialize Payout
 			$payout = new Client( $config );
 
+			// check notification parameter presence
+			if ( ! isset( $notification->external_id, $notification->type, $notification->nonce, $notification->signature ) ) {
+				$this->notification_bail( 'Missing parameter' );
+				exit();
+			}
+
+			// check notification signature
+			$signature_data = array( $notification->external_id, $notification->type, $notification->nonce );
+			if ( ! $payout->verifySignature( $signature_data, $notification->signature ) ) {
+				$this->notification_bail( 'Bad signature' );
+				exit();
+			}
+
 			$external_id               = $notification->external_id;
 			$store_payout_order_status = $notification->data->status;
 			$payout_checkout_id        = $notification->data->id;
 
 			if ( isset( $external_id ) && isset( $store_payout_order_status ) ) {
-				if ( ! $payout->verifySignature( array( $external_id, $notification->type, $notification->nonce ), $notification->signature ) ) {
-
-					$result = array( 'error' => 'Bad signature' );
-					header_remove();
-					header( 'Content-Type: application/json' );
-					http_response_code( 401 );
-					echo json_encode( $result, true );
-					exit();
-
-				}
 
 				$order = wc_get_order( $external_id );
 
@@ -184,6 +187,14 @@ function wc_payout_gateway_init() {
 				}
 			}
 
+		}
+
+		function notification_bail( $message ) {
+			$result = array( 'error' => $message );
+			header_remove();
+			header( 'Content-Type: application/json' );
+			http_response_code( 401 );
+			echo json_encode( $result, true );
 		}
 
 		/**

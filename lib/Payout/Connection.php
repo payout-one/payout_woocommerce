@@ -187,7 +187,7 @@ class Connection {
 		$response = json_decode( $this->response );
 
 		if ( isset( $response->errors ) ) {
-			throw new Exception( 'Payout error: ' . $response->errors );
+			throw new Exception( 'Payout error: ' . json_encode( $response->errors ) );
 		}
 
 		if ( isset( $response->token ) ) {

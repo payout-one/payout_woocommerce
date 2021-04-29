@@ -432,7 +432,7 @@ function wc_payout_gateway_init() {
 					'redirection' => 5,
 					'blocking'    => true,
 					'httpversion' => '1.0',
-					'sslverify'   => false,
+					'sslverify'   => true,
 					'data_format' => 'body',
 				);
 
@@ -816,5 +816,4 @@ function woo_admin_order_script() {
 })(jQuery);
   </script>";
 }
-
 

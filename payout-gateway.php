@@ -336,6 +336,16 @@ function wc_payout_gateway_init() {
 						'label'   => __( 'Allow', 'payout-payment-gateway' ),
 					'default' => 'no'
 				),
+
+
+				'idempotency_key' => array(
+						'title'   => __( 'Send idempotency key', 'payout-payment-gateway' ),
+						'type'    => 'checkbox',
+						'description' => 'Disclaimer: If allowed and system will change the amount, the first amount will be paid.',
+						'label'   => __( 'Allow', 'payout-payment-gateway' ),
+						'default' => 'no',
+				),
+
 			) );
 		}
 	
@@ -619,7 +629,10 @@ function wc_payout_gateway_init() {
 		        }
 
 
-		
+
+		        if ('yes' === $this->get_option( 'idempotency_key' )) {
+					$checkout_data['idempotency_key'] = $order->get_id();
+				}
 
 
 			    if ($order->get_total() == 0 ) {
@@ -758,7 +771,7 @@ function insert_script_payout($oid) {
 
 
 				  var counter = 0;
-				  var checkingTime = 5;
+				  var checkingTime = 8;
 				  var checkInterval = 1000;
 				  var oid = '<?php echo $oid;  ?>';
 

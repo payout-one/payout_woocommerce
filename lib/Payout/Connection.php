@@ -128,9 +128,14 @@ class Connection
      * @return mixed
      * @throws Exception
      */
-    public function post($url, $body)
+    public function post($url, $body, $idempotency_key)
     {
         $this->addHeader('Authorization', 'Bearer ' . $this->token);
+        
+        if (!is_null($idempotency_key)) {
+           $this->addHeader('idempotency-key', $idempotency_key);
+        }
+        
         $this->initializeRequest();
 
         if (!is_string($body)) {

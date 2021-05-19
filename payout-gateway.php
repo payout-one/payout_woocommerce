@@ -341,7 +341,7 @@ function wc_payout_gateway_init() {
 				'idempotency_key' => array(
 						'title'   => __( 'Send idempotency key', 'payout-payment-gateway' ),
 						'type'    => 'checkbox',
-						'description' => 'Disclaimer: If it's allowed, order id is used as unique key to block creating multiple checkouts with same order id. When system change the order's amount and order id will be same, new checkout will not be created so old amount will be used for payment.',
+						'description' => "Disclaimer: If it's allowed, order id is used as unique key to block creating multiple checkouts with same order id. When system change the order's amount and order id will be same, new checkout will not be created so old amount will be used for payment.",
 						'label'   => __( 'Allow', 'payout-payment-gateway' ),
 						'default' => 'no',
 				),

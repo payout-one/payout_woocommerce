@@ -5,7 +5,7 @@
  * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.0.11
+ * Version: 1.0.12
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2020, Seduco

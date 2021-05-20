@@ -592,12 +592,12 @@ function wc_payout_gateway_init() {
 			            'email' => $order->get_billing_email()
 			        ],
 			        'products' => $products,
-			        'billing_addresss' => [
+			        'billing_address' => [
 			            'address_line_1' => $order->get_billing_address_1(),
 			            'address_line_2' => $order->get_billing_address_2(),
 			            'city' => $order->get_billing_city(),
 			            'country_code' => $order->get_billing_country(),
-			            'name'  => $first_name.'&nbsp;'.$last_name,
+			            'name'  => $first_name.' '.$last_name,
 			            'postal_code'  => $order->get_billing_postcode(),
 			     
 			        ],
@@ -613,7 +613,7 @@ function wc_payout_gateway_init() {
 			            'address_line_2' => $order->get_shipping_address_2(),
 			            'city' => $order->get_shipping_city(),
 			            'country_code' => $order->get_shipping_country(),
-			            'name'  => $first_name.'&nbsp;'.$last_name,
+			            'name'  => $first_name.' '.$last_name,
 			            'postal_code'  => $order->get_shipping_postcode(),
 			     
 			        ];

@@ -106,7 +106,7 @@ class Checkout
         if (isset($data['products']) && is_array($data['products'])) {
             $checkout_data['products'] = $data['products'];
         }
-        if (isset($data['idempotency_key']) && is_array($data['idempotency_key'])) {
+        if (isset($data['idempotency_key']) && is_string($data['idempotency_key'])) {
             $checkout_data['idempotency_key'] = $data['idempotency_key'];
         }
         if (isset($data['mode']) && is_string($data['mode'])) {

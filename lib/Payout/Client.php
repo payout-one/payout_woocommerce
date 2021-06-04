@@ -163,6 +163,7 @@ class Client
         $checkout = new Checkout();
 
         $prepared_checkout = $checkout->create($data);
+        $idempotency_key = !is_null($data['idempotency_key']) ? $data['idempotency_key'] : null;
 
         $nonce = $this->generateNonce();
         $prepared_checkout['nonce'] = $nonce;
@@ -173,7 +174,7 @@ class Client
 
         $prepared_checkout = json_encode($prepared_checkout);
 
-        $response = $this->connection()->post('checkouts', $prepared_checkout);
+        $response = $this->connection()->post('checkouts', $prepared_checkout, $idempotency_key);
 
         if (!$this->verifySignature(array($response->amount, $response->currency, $response->external_id, $response->nonce), $response->signature)) {
             throw new Exception('Payout error: Invalid signature in API response.');

@@ -5,7 +5,7 @@
  * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.0.12
+ * Version: 1.0.13
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2020, Seduco
@@ -336,6 +336,16 @@ function wc_payout_gateway_init() {
 						'label'   => __( 'Allow', 'payout-payment-gateway' ),
 					'default' => 'no'
 				),
+
+				'idempotency_key' => array(
+				'title'   => __( 'Send idempotency key', 'payout-payment-gateway' ),
+				'type'    => 'checkbox',
+				'description' => __("Disclaimer: If it's allowed, order id is used as unique key to block creating multiple checkouts with same order id. When system change the order's amount and order id will be same, new checkout will not be created so old amount will be used for payment.", 'payout-payment-gateway' ),
+				'label'   => __( 'Allow', 'payout-payment-gateway' ),
+				'default' => 'no',
+				),
+
+
 			) );
 		}
 	
@@ -620,6 +630,9 @@ function wc_payout_gateway_init() {
 		        }
 
 
+		        if ('yes' === $this->get_option( 'idempotency_key' )) {
+					$checkout_data['idempotency_key'] = $order->get_id();
+				}
 		
 
 
@@ -629,6 +642,7 @@ function wc_payout_gateway_init() {
 			    	return false;
 			    	
 			    }
+
 
 
 			   	$debug = $this->get_option( 'debug' );
@@ -764,7 +778,7 @@ function insert_script_payout($oid) {
 
 
 				  var counter = 0;
-				  var checkingTime = 5;
+				  var checkingTime = 8;
 				  var checkInterval = 1000;
 				  var oid = '<?php echo $oid;  ?>';
 

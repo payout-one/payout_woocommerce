@@ -1,3 +1,6 @@
 .phpintel
+# composer dependencies
+/vendor/
+
 .idea
 .DS_Store

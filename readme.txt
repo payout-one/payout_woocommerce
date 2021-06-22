@@ -39,9 +39,13 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 3. Rozhranie platobnej brány
 
 == Changelog ==
+
+= 2.0.0 =
+* Added support for recurrent payments via WooCommerce Subscriptions
+
 = 1.0.13 =
 * Idempotency key
-* Ajax-based watcher for payment notification - checking time changed 
+* Ajax-based watcher for payment notification - checking time changed
 
 = 1.0.12 =
 * Fixed typo with billing address
@@ -80,7 +84,7 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 * Language translation fix
 
 = 1.0.1 =
-* Code improvements 
+* Code improvements
 
 = 1.0.0 =
 * Initial release

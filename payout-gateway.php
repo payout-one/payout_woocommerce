@@ -5,7 +5,7 @@
  * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 2.0.1
+ * Version: 2.0.0
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2020, Seduco
@@ -317,14 +317,6 @@ function wc_payout_gateway_init() {
 						'default' => 'no',
 					),
 
-					'idempotency_key'         => array(
-						'title'   => __( 'Send idempotency key', 'payout-payment-gateway' ),
-						'type'    => 'checkbox',
-						'description' => 'Disclaimer: If allowed and system will change the amount, the first amount will be paid.',
-						'label'   => __( 'Allow', 'payout-payment-gateway' ),
-					    'default' => 'no'
-					),
-
 					'idempotency_key' => array(
 					'title'   => __( 'Send idempotency key', 'payout-payment-gateway' ),
 					'type'    => 'checkbox',
@@ -459,7 +451,7 @@ function wc_payout_gateway_init() {
 
 		public function prepare_checkout_data( $order ) {
 
-			    $order = wc_get_order($order_id);
+
 				$first_name = $order->get_billing_first_name();
 				$last_name  = $order->get_billing_last_name();
 				$products = array();
@@ -543,39 +535,29 @@ function wc_payout_gateway_init() {
 			// Initialize Payout
 			$payout = new Client( $config );
 			$debug = $this->get_option( 'debug' );
-			$stored_redirect_url = get_post_meta( $order_id, 'payout_redirect_url', true );
 
 
-			if ($stored_redirect_url) {
-				$redirect_url = $stored_redirect_url;
+			$response = $payout->createCheckout($checkout_data);
+
+			if ($debug == "yes") {
+					$logger = wc_get_logger();
+					$logger->log( 'payout_log',  'CHECKOUT_DATA: ' . json_encode($checkout_data)  );
+					$logger->log( 'payout_log',  'RESPONSE_PAYOUT: ' . json_encode($response)  );
 			}
 
-			else {
 
-				$response = $payout->createCheckout($checkout_data);
+			if ($response->status == "processing") {
 
-			    if ($debug == "yes") {
-						$logger = wc_get_logger();
-						$logger->log( 'payout_log',  'CHECKOUT_DATA: ' . json_encode($checkout_data)  );
-						$logger->log( 'payout_log',  'RESPONSE_PAYOUT: ' . json_encode($response)  );
+				if ($debug == "yes") {
+					$logger->log( 'payout_log',  'STATUS: pending'  );
 				}
 
-
-				if ($response->status == "processing") {
-
-					if ($debug == "yes") {
-						$logger->log( 'payout_log',  'STATUS: pending'  );
-					}
-
-				    $order->update_status('pending');
-				}
-
-
-				$redirect_url = $response->checkout_url;
-
-
-				return $response;
+				$order->update_status('pending');
 			}
+
+
+
+			return $response;
 
 		}
 
@@ -594,28 +576,30 @@ function wc_payout_gateway_init() {
 						$checkout_data['mode'] = 'store_card';
 				}
 
-				$response = $this->create_payout_checkout( $order, $checkout_data );
-
-				$redirect_url = $response->checkout_url;
-				$payment_id   = $this->get_option( 'payment_id' );
-				$language     = $this->get_option( 'language' );
-
-				if ( $payment_id != '' ) {
-					  $redirect_url = $response->checkout_url . '?payment_method=' . $payment_id;
-				}
-
-				if ( $language != '' ) {
-					  $redirect_url = $response->checkout_url . '?locale=' . $language;
-				}
 
 				$stored_redirect_url = get_post_meta( $order_id, 'payout_redirect_url', true );
-				if ( $stored_redirect_url ) {
+
+				if ($stored_redirect_url) {
 					$redirect_url = $stored_redirect_url;
+				} else {
+					$response = $this->create_payout_checkout( $order, $checkout_data );
+					$redirect_url = $response->checkout_url;
+
+					$payment_id   = $this->get_option( 'payment_id' );
+					$language     = $this->get_option( 'language' );
+
+					if ( $payment_id != '' ) {
+						$redirect_url = $response->checkout_url . '?payment_method=' . $payment_id;
+					}
+
+					if ( $language != '' ) {
+						$redirect_url = $response->checkout_url . '?locale=' . $language;
+					}
+
+					update_post_meta( $order_id, 'payout_redirect_url', $redirect_url );
 				}
 
 
-
-				update_post_meta( $order_id, 'payout_redirect_url', $redirect_url );
 
 				return array(
 					'result'   => 'success',

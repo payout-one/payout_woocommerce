@@ -459,23 +459,7 @@ function wc_payout_gateway_init() {
 
 		public function prepare_checkout_data( $order ) {
 
-			$billingData = $order->get_address();
-
-
-			try {
-			    // Config Payout API
-			    $config = array(
-			        'client_id' => $this->get_option( 'client_id' ),
-			        'client_secret' => $this->get_option( 'client_secret' ),
-			        'sandbox' => $this->get_option( 'sandbox' )
-			    );
-
-			    // Initialize Payout
-			    $payout = new Client($config);
-
-			  
-			    $order = wc_get_order($order_id); 
-			    $billingData = $order->get_address();
+			    $order = wc_get_order($order_id);
 				$first_name = $order->get_billing_first_name();
 				$last_name  = $order->get_billing_last_name();
 				$products = array();
@@ -496,7 +480,7 @@ function wc_payout_gateway_init() {
 
 				}
 
-			
+
 			    // Create checkout
 			    $checkout_data = array(
 			        'amount' => $order_total,
@@ -514,9 +498,9 @@ function wc_payout_gateway_init() {
 			            'country_code' => $order->get_billing_country(),
 			            'name'  => $first_name.' '.$last_name,
 			            'postal_code'  => $order->get_billing_postcode(),
-			     
+
 			        ],
-			 
+
 			        'external_id' => $order->get_id(),
 			        'redirect_url' =>  $this->get_return_url($order)
 			    );
@@ -533,7 +517,7 @@ function wc_payout_gateway_init() {
 			            'country_code' => $order->get_shipping_country(),
 			            'name'  => $first_name.' '.$last_name,
 			            'postal_code'  => $order->get_shipping_postcode(),
-			     
+
 			        ];
 		        }
 
@@ -560,11 +544,11 @@ function wc_payout_gateway_init() {
 			$payout = new Client( $config );
 			$debug = $this->get_option( 'debug' );
 			$stored_redirect_url = get_post_meta( $order_id, 'payout_redirect_url', true );
-			   	
+
 
 			if ($stored_redirect_url) {
 				$redirect_url = $stored_redirect_url;
-			} 
+			}
 
 			else {
 
@@ -628,8 +612,8 @@ function wc_payout_gateway_init() {
 				if ( $stored_redirect_url ) {
 					$redirect_url = $stored_redirect_url;
 				}
- 	
-				
+
+
 
 				update_post_meta( $order_id, 'payout_redirect_url', $redirect_url );
 
@@ -743,7 +727,7 @@ function insert_script_payout( $oid ) {
 						 url: "<?php echo admin_url( 'admin-ajax.php' ); ?>",
 						 data: $params,
 						 success: function(data){
- 
+
 						    if ( (data == "succeeded") || data == "processing" ) {
 							   clearInterval(checkingInterval);
 							   jQuery('.woocommerce-order').addClass( 'done' ).unblock();
@@ -757,7 +741,7 @@ function insert_script_payout( $oid ) {
 						    if ((counter > checkingTime) ) {
 							   clearInterval(checkingInterval);
 						 	   window.location.replace('<?php echo $payment_url; ?>');
-						    }  
+						    }
 
 						 },
 						 error : function(jqXHR, textStatus, errorThrown) {

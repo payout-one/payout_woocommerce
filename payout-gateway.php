@@ -145,7 +145,6 @@ function wc_payout_gateway_init() {
 
 			if ( $debug == 'yes' ) {
 				$logger = wc_get_logger();
-				$logger->log( 'payout_log', 'NOTIFICATION: ' . json_encode( $notification ) );
 			}
 
 			$config = array(
@@ -178,7 +177,7 @@ function wc_payout_gateway_init() {
 				}
 				if ( $debug == 'yes' ) {
 					$logger->log(
-						'payout_log',
+						'debug',
 						'PAYMENT TOKEN: based on paid order #' . $notification->external_id . ' token was saved to subscriptions ' . implode(
 							', ',
 							array_map(
@@ -187,7 +186,7 @@ function wc_payout_gateway_init() {
 								},
 								$subscription_ids
 							)
-						)
+							) ,array( 'source' => 'payout' )
 					);
 				}
 				exit();
@@ -207,7 +206,7 @@ function wc_payout_gateway_init() {
 				$current_order_status = $order->get_status();
 
 				if ( $debug == 'yes' ) {
-					$logger->log( 'payout_log', 'STATUS: ' . json_encode( $store_payout_order_status ) );
+					$logger->log( 'debug', 'Recieved payment notification: ' . json_encode( $store_payout_order_status ), array( 'source' => 'payout' ) );
 				}
 
 				if ( $store_payout_order_status == 'succeeded' ) {
@@ -541,17 +540,15 @@ function wc_payout_gateway_init() {
 
 			if ($debug == "yes") {
 					$logger = wc_get_logger();
-					$logger->log( 'payout_log',  'CHECKOUT_DATA: ' . json_encode($checkout_data)  );
-					$logger->log( 'payout_log',  'RESPONSE_PAYOUT: ' . json_encode($response)  );
+					$logger->log( 'debug',  'Amount: ' . json_encode($checkout_data['amount']), array( 'source' => 'payout' )  );
+					$logger->log( 'debug',  'External id: ' . json_encode($checkout_data['external_id']), array( 'source' => 'payout' )  );
+					$logger->log( 'debug',  'Idempotency key: ' . json_encode($checkout_data['idempotency_key']), array( 'source' => 'payout' )  );
+					$logger->log( 'debug',  'ID(response): ' . json_encode($response->id), array( 'source' => 'payout' )  );
+					$logger->log( 'debug',  'Payout status(response): ' . json_encode($response->status), array( 'source' => 'payout' )  );
 			}
 
 
 			if ($response->status == "processing") {
-
-				if ($debug == "yes") {
-					$logger->log( 'payout_log',  'STATUS: pending'  );
-				}
-
 				$order->update_status('pending');
 			}
 
@@ -608,7 +605,7 @@ function wc_payout_gateway_init() {
 
 				} catch ( Exception $e ) {
 					if ( 'yes' === $this->get_option( 'debug' ) ) {
-						wc_get_logger()->log( 'payout_log', 'Processing of regular payment has failed: ' . $e->getMessage() );
+						wc_get_logger()->log( 'debug', 'Processing of regular payment has failed: ' . $e->getMessage(), array( 'source' => 'payout' ) );
 					}
 					wc_add_notice( sprintf( __( 'Payment gateway %s : There is a problem, contact your webmaster.', 'payout-payment-gateway' ), $this->method_title ), 'error' );
 					return false;
@@ -642,7 +639,7 @@ function wc_payout_gateway_init() {
 				// there is no need to visit checkout url, the payment notification should arrive based on just checkout being created
 			} catch ( Exception $e ) {
 				if ( 'yes' === $this->get_option( 'debug' ) ) {
-					wc_get_logger()->log( 'payout_log', 'Processing of recurrent payment has failed: ' . $e->getMessage() );
+					wc_get_logger()->log( 'debug', 'Processing of recurrent payment has failed: ' . $e->getMessage(), array( 'source' => 'payout' ) );
 				}
 			}
 		}

@@ -39,166 +39,158 @@ use Exception;
  * @author     Neotrendy s. r. o.
  * @link       https://github.com/payout-one/payout_php
  */
-class Client
-{
-    const LIB_VER = '1.0.1';
-    const API_URL = 'https://app.payout.one/api/v1/';
-    const API_URL_SANDBOX = 'https://sandbox.payout.one/api/v1/';
+class Client {
 
-    /**
-     * @var array $config API client configuration
-     * @var string $token Obtained API access token
-     * @var Connection $connection Connection instance
-     */
-    private $config, $token, $connection;
+	const LIB_VER         = '1.0.1';
+	const API_URL         = 'https://app.payout.one/api/v1/';
+	const API_URL_SANDBOX = 'https://sandbox.payout.one/api/v1/';
 
-    /**
-     * Construct the Payout API Client.
-     *
-     * @param array $config
-     * @throws Exception
-     */
-    public function __construct(array $config = array())
-    {
-        if (!function_exists('curl_init')) {
-            throw new Exception('Payout needs the CURL PHP extension.');
-        }
-        if (!function_exists('json_decode')) {
-            throw new Exception('Payout needs the JSON PHP extension.');
-        }
+	/**
+	 * @var array $config API client configuration
+	 * @var string $token Obtained API access token
+	 * @var Connection $connection Connection instance
+	 */
+	private $config, $token, $connection;
 
-        $this->config = array_merge(
-            [
-                'client_id' => '',
-                'client_secret' => '',
-                'sandbox' => false
-            ],
-            $config
-        );
-    }
+	/**
+	 * Construct the Payout API Client.
+	 *
+	 * @param array $config
+	 * @throws Exception
+	 */
+	public function __construct( array $config = array() ) {
+		if ( ! function_exists( 'curl_init' ) ) {
+			throw new Exception( 'Payout needs the CURL PHP extension.' );
+		}
+		if ( ! function_exists( 'json_decode' ) ) {
+			throw new Exception( 'Payout needs the JSON PHP extension.' );
+		}
 
-    /**
-     * Get a string containing the version of the library.
-     *
-     * @return string
-     */
-    public function getLibraryVersion()
-    {
-        return self::LIB_VER;
-    }
+		$this->config = array_merge(
+			array(
+				'client_id'     => '',
+				'client_secret' => '',
+				'sandbox'       => false,
+			),
+			$config
+		);
+	}
 
-    /**
-     * Get an instance of the HTTP connection object. Initializes
-     * the connection if it is not already active.
-     * Authorize connection and obtain access token.
-     *
-     * @return Connection
-     * @throws Exception
-     */
-    private function connection()
-    {
-        if (!$this->connection) {
-            $api_url = ($this->config['sandbox']) ? self::API_URL_SANDBOX : self::API_URL;
-            $this->connection = new Connection($api_url);
-            $this->token = $this->connection->authenticate('authorize', $this->config['client_id'], $this->config['client_secret']);
-        }
+	/**
+	 * Get a string containing the version of the library.
+	 *
+	 * @return string
+	 */
+	public function getLibraryVersion() {
+		return self::LIB_VER;
+	}
 
-        return $this->connection;
-    }
+	/**
+	 * Get an instance of the HTTP connection object. Initializes
+	 * the connection if it is not already active.
+	 * Authorize connection and obtain access token.
+	 *
+	 * @return Connection
+	 * @throws Exception
+	 */
+	private function connection() {
+		if ( ! $this->connection ) {
+			$api_url          = ( $this->config['sandbox'] ) ? self::API_URL_SANDBOX : self::API_URL;
+			$this->connection = new Connection( $api_url );
+			$this->token      = $this->connection->authenticate( 'authorize', $this->config['client_id'], $this->config['client_secret'] );
+		}
 
-    /**
-     * Create signature as SHA256 hash of message.
-     *
-     * @param $message
-     * @return string
-     */
-    private function getSignature($message)
-    {
-        $message = implode('|', $message);
-        return hash('sha256', pack('A*', $message));
-    }
+		return $this->connection;
+	}
 
-    /**
-     * Verify signature obtained in API response.
-     *
-     * @param array $message to be signed
-     * @param string $signature from response
-     * @return bool
-     */
-    public function verifySignature($message, $signature)
-    {
-        $message[] = $this->config['client_secret'];
+	/**
+	 * Create signature as SHA256 hash of message.
+	 *
+	 * @param $message
+	 * @return string
+	 */
+	private function getSignature( $message ) {
+		$message = implode( '|', $message );
+		return hash( 'sha256', pack( 'A*', $message ) );
+	}
 
-        if (strcmp($this->getSignature($message), $signature) == 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+	/**
+	 * Verify signature obtained in API response.
+	 *
+	 * @param array  $message to be signed
+	 * @param string $signature from response
+	 * @return bool
+	 */
+	public function verifySignature( $message, $signature ) {
+		$message[] = $this->config['client_secret'];
 
-    /**
-     * Generate nonce string. In cryptography, a nonce is an arbitrary number
-     * that can be used just once in a cryptographic communication.
-     * https://en.wikipedia.org/wiki/Cryptographic_nonce
-     *
-     * @return string
-     */
-    private function generateNonce()
-    {
-        // TODO use more secure nonce https://secure.php.net/manual/en/function.random-bytes.php
-        $bytes = openssl_random_pseudo_bytes(32);
-        $hash = base64_encode($bytes);
-        return $hash;
-    }
+		if ( strcmp( $this->getSignature( $message ), $signature ) == 0 ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-    /**
-     * Verify input data and create checkout and post signed data to API.
-     *
-     * @param array $data
-     * @return mixed
-     * @throws Exception
-     */
-    public function createCheckout($data)
-    {
-        $checkout = new Checkout();
+	/**
+	 * Generate nonce string. In cryptography, a nonce is an arbitrary number
+	 * that can be used just once in a cryptographic communication.
+	 * https://en.wikipedia.org/wiki/Cryptographic_nonce
+	 *
+	 * @return string
+	 */
+	private function generateNonce() {
+		// TODO use more secure nonce https://secure.php.net/manual/en/function.random-bytes.php
+		$bytes = openssl_random_pseudo_bytes( 32 );
+		$hash  = base64_encode( $bytes );
+		return $hash;
+	}
 
-        $prepared_checkout = $checkout->create($data);
+	/**
+	 * Verify input data and create checkout and post signed data to API.
+	 *
+	 * @param array $data
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function createCheckout( $data ) {
+		$checkout = new Checkout();
+
+		$prepared_checkout = $checkout->create( $data );
         $idempotency_key = !is_null($data['idempotency_key']) ? $data['idempotency_key'] : null;
 
-        $nonce = $this->generateNonce();
-        $prepared_checkout['nonce'] = $nonce;
+		$nonce                      = $this->generateNonce();
+		$prepared_checkout['nonce'] = $nonce;
 
-        $message = array($prepared_checkout['amount'], $prepared_checkout['currency'], $prepared_checkout['external_id'], $nonce, $this->config['client_secret']);
-        $signature = $this->getSignature($message);
-        $prepared_checkout['signature'] = $signature;
+		$message                        = array( $prepared_checkout['amount'], $prepared_checkout['currency'], $prepared_checkout['external_id'], $nonce, $this->config['client_secret'] );
+		$signature                      = $this->getSignature( $message );
+		$prepared_checkout['signature'] = $signature;
 
-        $prepared_checkout = json_encode($prepared_checkout);
+		$prepared_checkout = json_encode( $prepared_checkout );
 
-        $response = $this->connection()->post('checkouts', $prepared_checkout, $idempotency_key);
+		$response = $this->connection()->post('checkouts', $prepared_checkout, $idempotency_key);
 
-        if (!$this->verifySignature(array($response->amount, $response->currency, $response->external_id, $response->nonce), $response->signature)) {
-            throw new Exception('Payout error: Invalid signature in API response.');
-        }
+		if ( ! $this->verifySignature( array( $response->amount, $response->currency, $response->external_id, $response->nonce ), $response->signature ) ) {
+			throw new Exception( 'Payout error: Invalid signature in API response.' );
+		}
 
-        return $response;
-    }
+		return $response;
+	}
 
-    /**
-     * Get checkout details from API.
-     *
-     * @param integer $checkout_id
-     * @return mixed
-     * @throws Exception
-     */
-    public function getCheckout($checkout_id)
-    {
-        $url = 'checkouts/' . $checkout_id;
-        $response = $this->connection()->get($url);
+	/**
+	 * Get checkout details from API.
+	 *
+	 * @param integer $checkout_id
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function getCheckout( $checkout_id ) {
+		$url      = 'checkouts/' . $checkout_id;
+		$response = $this->connection()->get( $url );
 
-        if (!$this->verifySignature(array($response->amount, $response->currency, $response->external_id, $response->nonce), $response->signature)) {
-            throw new Exception('Payout error: Invalid signature in API response.');
-        }
+		if ( ! $this->verifySignature( array( $response->amount, $response->currency, $response->external_id, $response->nonce ), $response->signature ) ) {
+			throw new Exception( 'Payout error: Invalid signature in API response.' );
+		}
 
-        return $response;
-    }
+		return $response;
+	}
 }

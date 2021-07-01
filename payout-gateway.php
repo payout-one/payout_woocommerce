@@ -599,7 +599,8 @@ function wc_payout_gateway_init() {
 			        'customer' => [
 			            'first_name' => $first_name,
 			            'last_name' => $last_name,
-			            'email' => $order->get_billing_email()
+			            'email' => $order->get_billing_email(),
+			            'phone' => $order->get_billing_phone()
 			        ],
 			        'products' => $products,
 			        'billing_address' => [

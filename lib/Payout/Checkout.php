@@ -82,7 +82,8 @@ class Checkout
             'customer' => [
                 'first_name' => $data['customer']['first_name'],
                 'last_name' =>  $data['customer']['last_name'],
-                'email' =>  $data['customer']['email']
+                'email' =>  $data['customer']['email'],
+                'phone' =>  $data['customer']['phone']
             ],
             'external_id' => strval($data['external_id']),
             'nonce' => '',

@@ -3,7 +3,7 @@ Contributors: Seduco
 Tags: payout, gateway, slovakia, payment, payment gateway, platobná brána, payout payment gateway
 Requires at least: 4.0
 Tested up to: 5.7
-Stable tag: 1.0.13
+Stable tag: 1.0.14
 Donate link: https://payout.one/sk/
 Requires PHP: 7.0
 License: GPLv2 or later
@@ -39,6 +39,11 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 3. Rozhranie platobnej brány
 
 == Changelog ==
+= 1.0.14 =
+* Debug enhancement, separate debug log for errors
+* SSL verify fix
+* Added billing_phone to the checkout data
+
 = 1.0.13 =
 * Idempotency key
 * Ajax-based watcher for payment notification - checking time changed 

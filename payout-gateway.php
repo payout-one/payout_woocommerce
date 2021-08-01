@@ -370,7 +370,7 @@ function wc_payout_gateway_init() {
 		 */
 		public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
 		
-			if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
+			if ( $this->instructions && ! $sent_to_admin && $this->id === $order->get_payment_method() && $order->has_status( 'on-hold' ) ) {
 				echo wpautop( wptexturize( $this->instructions ) ) . PHP_EOL;
 			}
 		}

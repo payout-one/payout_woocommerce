@@ -43,6 +43,7 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 * Debug enhancement, separate debug log for errors
 * SSL verify fix
 * Added billing_phone to the checkout data
+* Function payout_callback() accept only checkout type payment notification
 
 = 1.0.13 =
 * Idempotency key

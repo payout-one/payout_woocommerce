@@ -117,20 +117,19 @@ function wc_payout_gateway_init() {
 			$this->description  = $this->get_option( 'description' );
 			$this->instructions = $this->get_option( 'instructions', $this->description );
 
+            // Actions
 
-			 add_action('woocommerce_update_options_payment_gateways', array($this, 'gateway_info'));
+			add_action('woocommerce_update_options_payment_gateways', array($this, 'gateway_info'));
 		  
-			// Actions
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
 			add_action( 'woocommerce_api_' . $this->id , array( $this, 'payout_callback' ) );
 		
 			add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
 
-			
 			add_action( 'woocommerce_order_refunded', array($this,'action_woocommerce_order_refunded'), 10, 2 );
 
-
+			add_action( 'woocommerce_order_status_changed', array($this,'log_woocommerce_status_change'), 10, 3 );
 
 			add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ), 10, 3 );
 		}
@@ -157,8 +156,6 @@ function wc_payout_gateway_init() {
 			}
 
 
-		
-
 		    $config = array(
 		        'client_id' => $this->get_option( 'client_id' ),
 		        'client_secret' => $this->get_option( 'client_secret' ),
@@ -172,9 +169,12 @@ function wc_payout_gateway_init() {
 
 		    $external_id = $notification->external_id;
 		    $store_payout_order_status = $notification->data->status;
-		    $payout_checkout_id = $notification->data->id;
+		    $payout_checkout_id = $notification->data->id;			
+		    $notification_type = $notification->data->object;
 
-
+			if($notification_type != "checkout") {
+				return;
+			}
 
 			if (isset($external_id) && isset($store_payout_order_status)) {
 		   		if (!$payout->verifySignature(array($external_id, $notification->type, $notification->nonce), $notification->signature)) {
@@ -357,6 +357,26 @@ function wc_payout_gateway_init() {
 			if ( $this->instructions ) {
 				echo wpautop( wptexturize( $this->instructions ) );
 			}
+		}
+
+
+
+		/**
+		 * Log the order status changes
+		 */
+
+
+		public function log_woocommerce_status_change($order_id,$old_status,$new_status) {
+
+
+			$debug = $this->get_option( 'debug' );
+
+			if ($debug == "yes") {
+				$logger = wc_get_logger();
+				$logger->log( 'debug', 'Status change: ' . json_encode( 'Order ID: '. $order_id . ' | ' . 'Old status: '. $old_status . ' | ' . 'New status: '. $new_status ), array( 'source' => 'payout' ) );
+
+			}
+
 		}
 
 

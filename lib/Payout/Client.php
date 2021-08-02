@@ -163,7 +163,7 @@ class Client
         $checkout = new Checkout();
 
         $prepared_checkout = $checkout->create($data);
-        $idempotency_key = !is_null($data['idempotency_key']) ? $data['idempotency_key'] : null;
+        $idempotency_key = array_key_exists('idempotency_key', $data) ? $data['idempotency_key'] : null;
 
         $nonce = $this->generateNonce();
         $prepared_checkout['nonce'] = $nonce;

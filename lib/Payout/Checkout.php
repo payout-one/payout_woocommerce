@@ -82,7 +82,8 @@ class Checkout
             'customer' => [
                 'first_name' => $data['customer']['first_name'],
                 'last_name' =>  $data['customer']['last_name'],
-                'email' =>  $data['customer']['email']
+                'email' =>  $data['customer']['email'],
+                'phone' =>  $data['customer']['phone']
             ],
             'external_id' => strval($data['external_id']),
             'nonce' => '',
@@ -96,9 +97,6 @@ class Checkout
         if (isset($data['billing_address']) && is_array($data['billing_address'])) {
             $checkout_data['billing_address'] = $data['billing_address'];
         }
-
-
-
 
         if (isset($data['shipping_address']) && is_array($data['shipping_address'])) {
             $checkout_data['shipping_address'] = $data['shipping_address'];

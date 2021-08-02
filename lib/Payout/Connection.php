@@ -194,7 +194,9 @@ class Connection
         $response = json_decode($this->response);
 
         if (isset($response->errors)) {
-            throw new Exception('Payout error: ' . $response->errors);
+            $logger = wc_get_logger();
+            $logger->log( 'debug',  'Payout response errros: ' . json_encode($response->errors), array( 'source' => 'payout-errors' )  );
+            throw new Exception('Payout error: ' . json_encode($response->errors));
         }
 
         if (isset($response->token)) {

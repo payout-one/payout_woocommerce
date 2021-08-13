@@ -3,7 +3,7 @@ Contributors: Seduco
 Tags: payout, gateway, slovakia, payment, payment gateway, platobná brána, payout payment gateway
 Requires at least: 4.0
 Tested up to: 5.7
-Stable tag: 1.0.14
+Stable tag: 1.0.15
 Donate link: https://payout.one/sk/
 Requires PHP: 7.0
 License: GPLv2 or later
@@ -39,6 +39,10 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 3. Rozhranie platobnej brány
 
 == Changelog ==
+= 1.0.15 =
+* Partial refunds
+* Refunds enhacements
+
 = 1.0.14 =
 * Debug enhancement, separate debug log for errors
 * SSL verify fix
@@ -47,7 +51,7 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 
 = 1.0.13 =
 * Idempotency key
-* Ajax-based watcher for payment notification - checking time changed 
+* Ajax-based watcher for payment notification - checking time changed
 
 = 1.0.12 =
 * Fixed typo with billing address
@@ -86,11 +90,15 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 * Language translation fix
 
 = 1.0.1 =
-* Code improvements 
+* Code improvements
 
 = 1.0.0 =
 * Initial release
 
 == Upgrade Notice ==
+
+= 1.0.15 =
+Pozor zmena v spôsobe refundácie. Refundácia sa nevykoná zmenou stavu ale je potrebné kliknúť na tlačidlo Refundácia pri sumáre objednávky.
+
 = 1.0.0 =
 Initial release

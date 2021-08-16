@@ -42,6 +42,7 @@ Navštívte https://payout.one/sk/faq.html pre podporu a časté kladené otázk
 = 1.0.15 =
 * Partial refunds
 * Refunds enhacements
+* Payment notification handling, improved compatibility with specific order statuses
 
 = 1.0.14 =
 * Debug enhancement, separate debug log for errors

@@ -203,30 +203,14 @@ function wc_payout_gateway_init() {
 
 
 
+			$completed_statuses = ["processing", "packing", "completed", "shipping", "ready-for-pickup", "picked-up", "cancelled", "refunded", "failed"];
+
 			if ($store_payout_order_status == "succeeded") {
-
-
-
-			    $order->payment_complete();
-
-
-			} else if ($store_payout_order_status == "expired" && $current_order_status != "completed") {
-
-
-
+				$order->payment_complete();
+			} else if ($store_payout_order_status == "expired" && !in_array($current_order_status, $completed_statuses)) {
 				$order->update_status('failed' , 'Payout : failed');
-
-
-
-			} else {
-
-
-
-				$order->update_status('on-hold' , 'Payout : on-hold');
-
-
-
 			}
+
 
 
 			}

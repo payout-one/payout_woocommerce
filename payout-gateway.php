@@ -5,7 +5,7 @@
  * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.0.15
+ * Version: 1.0.16
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2020, Seduco
@@ -370,10 +370,31 @@ function wc_payout_gateway_init() {
 		}
 
 
+		public function return_cents($amount) {
+		   $cents = intval($amount * 100);
+		   return $cents;
+		}
+
+
+
 
 
 		public function process_refund( $order_id, $amount = null, $reason = '' ) {
 
+
+
+			// Order object - to exclude some data
+			$order = wc_get_order( $order_id );
+			$payment_method_name = get_post_meta( $order_id, '_payment_method', true );
+
+			if ( ! $order ) {
+				return false;
+			}
+
+
+			if($payment_method_name != 'payout_gateway' ) {
+				return false;
+			}
 
 
 			// Get neccesary data
@@ -394,13 +415,9 @@ function wc_payout_gateway_init() {
 			$statement = '';
 
 
-			// Order object - to exclude some data
-			$order = wc_get_order( $order_id );
-
-
 			// Necessary data for signature
 
-			$amount = bcmul($amount, 100);
+			$amount = $this->return_cents($amount, 100);
 			$currency = $order->get_currency();
 			$external_id = $order_id;
 
@@ -548,7 +565,7 @@ function wc_payout_gateway_init() {
 			            $product_data = [
 			            'name' => $item->get_name(),
 			            'quantity' => $item->get_quantity(),
-			            'unit_price' => bcmul($product->get_price(), 100),
+			            'unit_price' => $this->return_cents($product->get_price(), 100),
 
 			            ];
 			            array_push($products, $product_data );

@@ -30,17 +30,9 @@ if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get
 }
 
 function payout_load_plugin_textdomain() {
-    // Load translations from the languages directory.
-    $locale = get_locale();
-
-    // This filter is documented in /wp-includes/l10n.php.
-    $locale = apply_filters('plugin_locale', $locale, 'payout-payment-gateway'); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
-
-    load_textdomain('payout-payment-gateway', plugin_dir_path(__FILE__) . 'languages/payout-payment-gateway-' . $locale . '.mo');
-
-    load_plugin_textdomain('payout-payment-gateway', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+    load_plugin_textdomain('payout-payment-gateway', false, dirname(plugin_basename(__FILE__)) . '/languages');
 }
-add_action('plugins_loaded', 'payout_load_plugin_textdomain');
+add_action('init', 'payout_load_plugin_textdomain');
 
 /**
  * Add the gateway to WC Available Gateways

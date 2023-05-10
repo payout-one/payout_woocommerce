@@ -131,9 +131,9 @@ class Connection
     public function post($url, $body, $idempotency_key)
     {
         $this->addHeader('Authorization', 'Bearer ' . $this->token);
-        
+
         if (!is_null($idempotency_key)) {
-           $this->addHeader('idempotency-key', $idempotency_key);
+            $this->addHeader('idempotency-key', $idempotency_key);
         }
         
         $this->initializeRequest();
@@ -194,8 +194,7 @@ class Connection
         $response = json_decode($this->response);
 
         if (isset($response->errors)) {
-            $logger = wc_get_logger();
-            $logger->log( 'debug',  'Payout response errros: ' . json_encode($response->errors), array( 'source' => 'payout-errors' )  );
+            wc_get_logger()->log('debug', 'Payout response errors: ' . json_encode($response->errors), ['source' => 'payout-errors']);
             throw new Exception('Payout error: ' . json_encode($response->errors));
         }
 

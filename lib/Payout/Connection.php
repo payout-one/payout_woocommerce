@@ -132,7 +132,7 @@ class Connection
     {
         $this->addHeader('Authorization', 'Bearer ' . $this->token);
 
-        if ($idempotency_key !== null) {
+        if (!is_null($idempotency_key)) {
             $this->addHeader('idempotency-key', $idempotency_key);
         }
         

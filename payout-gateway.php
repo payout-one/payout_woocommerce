@@ -103,7 +103,7 @@ if (!class_exists('WC_Payout_One')) {
             $order_id = $wp->query_vars['order-received'];
             $order    = wc_get_order($order_id);
 
-            if ($order->get_payment_method() !== 'payout_gateway') {
+            if (!$order || $order->get_payment_method() !== 'payout_gateway') {
                 return;
             }
 

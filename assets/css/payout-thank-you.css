@@ -1,3 +1,36 @@
-.woocommerce-order {
-    opacity: 0;
+.custom-loading-spinner {
+    position: absolute;
+    z-index: 9999;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    left: 0;
+    cursor: default;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.custom-loading-spinner::after {
+    content: '';
+    font-size: 10px;
+    width: 0.75em;
+    height: 0.75em;
+    animation: custom-spinner 900ms infinite linear;
+    border-radius: 50%;
+    box-shadow: rgba(0, 0, 0, 0.5) 1.5em 0 0 0,
+        rgba(0, 0, 0, 0.5) 1.1em 1.1em 0 0, rgba(0, 0, 0, 0.5) 0 1.5em 0 0,
+        rgba(0, 0, 0, 0.5) -1.1em 1.1em 0 0, rgba(0, 0, 0, 0.5) -1.5em 0 0 0,
+        rgba(0, 0, 0, 0.5) -1.1em -1.1em 0 0, rgba(0, 0, 0, 0.5) 0 -1.5em 0 0;
+}
+
+@keyframes custom-spinner {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

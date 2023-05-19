@@ -36,6 +36,7 @@ if (!class_exists('WC_Payout_One')) {
 
         private function __construct() {
             require_once __DIR__ . '/lib/Payout/init.php';
+            require_once __DIR__ . '/includes/class-wc-payout-logger.php';
             require_once __DIR__ . '/includes/class-wc-gateway-payout.php';
 
             add_action('init', [$this, 'load_plugin_textdomain']);

@@ -8,6 +8,8 @@ use Payout\Client as Client;
 
 class WC_Payout_Gateway extends WC_Payment_Gateway {
 
+    public $debug_enabled;
+
     public function __construct() {
         $this->id                 = 'payout_gateway';
         $this->has_fields         = false;
@@ -19,10 +21,11 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
         $this->init_settings();
 
         // Define user set variables
-        $this->title        = $this->get_option('title');
-        $this->description  = $this->get_option('description');
-        $this->instructions = $this->get_option('instructions', $this->description);
-        $this->supports     = ['refunds'];
+        $this->title         = $this->get_option('title');
+        $this->description   = $this->get_option('description');
+        $this->instructions  = $this->get_option('instructions', $this->description);
+        $this->supports      = ['refunds'];
+        $this->debug_enabled = $this->get_option('debug') === 'yes' ? true : false;
 
         // Actions
         add_action('woocommerce_update_options_payment_gateways', [$this, 'gateway_info']);
@@ -35,12 +38,6 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
 
     function payout_callback() {
         $notification = json_decode(file_get_contents('php://input'));
-
-        $debug = $this->get_option('debug');
-
-        if ($debug == "yes") {
-            $logger = wc_get_logger();
-        }
 
         $config = [
             'client_id'     => $this->get_option('client_id'),
@@ -77,8 +74,8 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
 
             $current_order_status = $order->get_status();
 
-            if ($debug == 'yes') {
-                $logger->log('debug', 'Recieved payment notification: ' . json_encode($store_payout_order_status), ['source' => 'payout']);
+            if ($this->debug_enabled) {
+                WC_Payout_Logger::log('Received payment notification: ' . json_encode($store_payout_order_status));
             }
 
             $completed_statuses = ["processing", "packing", "completed", "shipping", "ready-for-pickup", "picked-up", "cancelled", "refunded", "failed"];
@@ -182,10 +179,8 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
      * Log the order status changes
      */
     public function log_woocommerce_status_change($order_id, $old_status, $new_status) {
-        $debug = $this->get_option('debug');
-        if ($debug == "yes") {
-            $logger = wc_get_logger();
-            $logger->log('debug', 'Status change: ' . json_encode('Order ID: ' . $order_id . ' | ' . 'Old status: ' . $old_status . ' | ' . 'New status: ' . $new_status), ['source' => 'payout']);
+        if ($this->debug_enabled) {
+            WC_Payout_Logger::log('Status change: ' . json_encode('Order ID: ' . $order_id . ' | ' . 'Old status: ' . $old_status . ' | ' . 'New status: ' . $new_status));
         }
     }
 
@@ -297,10 +292,8 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
         $response_code    = $data_r['response']['code'];
         $error_message    = $data_r['body'];
 
-        $debug = $this->get_option('debug');
-        if ($debug == "yes") {
-            $logger = wc_get_logger();
-            $logger->log('debug', 'Refund response:' . json_encode($data_r), ['source' => 'payout']);
+        if ($this->debug_enabled) {
+            WC_Payout_Logger::log('Refund response:' . json_encode($data_r));
         }
 
         if (($response_message == "OK") && ($response_code == 200)) {
@@ -394,29 +387,22 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
                 return false;
             }
 
-            $debug = $this->get_option('debug');
-
             $stored_redirect_url = get_post_meta($order_id, 'payout_redirect_url', true);
 
             if ($stored_redirect_url) {
                 $redirect_url = $stored_redirect_url;
             } else {
                 $response = $payout->createCheckout($checkout_data);
-                if ($debug == "yes") {
-                    $logger = wc_get_logger();
-                    $logger->log('debug', 'Amount: ' . json_encode($checkout_data['amount']), ['source' => 'payout']);
-                    $logger->log('debug', 'External id: ' . json_encode($checkout_data['external_id']), ['source' => 'payout']);
+                if ($this->debug_enabled) {
+                    WC_Payout_Logger::log('Amount: ' . json_encode($checkout_data['amount']));
+                    WC_Payout_Logger::log('External id: ' . json_encode($checkout_data['external_id']));
 
-                    if (array_key_exists('idempotency_key', $checkout_data)) {
-                        $idempotency_key = $checkout_data['idempotency_key'];
-                    } else {
-                        $idempotency_key = null;
-                    }
+                    $idempotency_key = array_key_exists('idempotency_key', $checkout_data) ? $checkout_data['idempotency_key'] : null;
 
-                    $logger->log('debug', 'Idempotency key: ' . json_encode($idempotency_key), ['source' => 'payout']);
+                    WC_Payout_Logger::log('Idempotency key: ' . json_encode($idempotency_key));
 
-                    $logger->log('debug', 'ID(response): ' . json_encode($response->id), ['source' => 'payout']);
-                    $logger->log('debug', 'Payout status(response): ' . json_encode($response->status), ['source' => 'payout']);
+                    WC_Payout_Logger::log('ID (response): ' . json_encode($response->id));
+                    WC_Payout_Logger::log('Payout status (response): ' . json_encode($response->status));
                 }
 
                 if ($response->status == "processing") {

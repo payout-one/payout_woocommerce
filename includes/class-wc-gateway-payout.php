@@ -72,7 +72,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
             header_remove();
             header('Content-Type: application/json');
             http_response_code(401);
-            echo json_encode(['error' => 'Bad signature'], true);
+            echo json_encode(['error' => 'Bad signature']);
             exit;
         }
 

@@ -89,7 +89,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
         $current_order_status = $order->get_status();
 
         if ($this->debug_enabled) {
-            WC_Payout_Logger::log('Received payment notification: ' . json_encode($checkout_status));
+            WC_Payout_Logger::log('Received payment notification status: ' . json_encode($checkout_status));
         }
 
         $completed_statuses = apply_filters(
@@ -101,6 +101,9 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
             $order->payment_complete();
         } else if ($checkout_status === 'expired' && !in_array($current_order_status, $completed_statuses)) {
             $order->update_status('failed', 'Payout : failed');
+            if ($this->debug_enabled) {
+                WC_Payout_Logger::log('Payment notification JSON: ' . json_encode($notification));
+            }
         }
     }
 

@@ -9,12 +9,17 @@ use Payout\Client as Client;
 class WC_Payout_Gateway extends WC_Payment_Gateway {
 
     public $debug_enabled;
+    public $instructions;
+    public $client_id;
+    public $client_secret;
+    public $sandbox;
 
     public function __construct() {
         $this->id                 = 'payout_gateway';
         $this->has_fields         = false;
         $this->method_title       = __('Payout', 'payout-payment-gateway');
         $this->method_description = __('Payout gateway integration.', 'payout-payment-gateway') . '<br><strong style="color:green;">' . __('Notification URL: ', 'payout-payment-gateway') . '</strong>' . add_query_arg('wc-api', 'payout_gateway', home_url() . '/');
+        $this->supports           = ['refunds'];
 
         // Load the settings.
         $this->init_form_fields();
@@ -24,25 +29,26 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
         $this->title         = $this->get_option('title');
         $this->description   = $this->get_option('description');
         $this->instructions  = $this->get_option('instructions', $this->description);
-        $this->supports      = ['refunds'];
         $this->debug_enabled = $this->get_option('debug') === 'yes' ? true : false;
+        $this->client_id     = $this->get_option('client_id');
+        $this->client_secret = $this->get_option('client_secret');
+        $this->sandbox       = $this->get_option('sandbox');
 
         // Actions
-        add_action('woocommerce_update_options_payment_gateways', [$this, 'gateway_info']);
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
-        add_action('woocommerce_api_' . $this->id, [$this, 'payout_callback']);
-        add_action('woocommerce_thankyou_' . $this->id, [$this, 'thankyou_page']);
+        add_action('woocommerce_api_' . $this->id, [$this, 'payout_webhook_callback']);
+        add_action('woocommerce_thankyou_' . $this->id, [$this, 'thank_you_page_instructions']);
         add_action('woocommerce_order_status_changed', [$this, 'log_woocommerce_status_change'], 10, 3);
         add_action('woocommerce_email_before_order_table', [$this, 'email_instructions'], 10, 3);
     }
 
-    function payout_callback() {
+    function payout_webhook_callback() {
         $notification = json_decode(file_get_contents('php://input'));
 
         $config = [
-            'client_id'     => $this->get_option('client_id'),
-            'client_secret' => $this->get_option('client_secret'),
-            'sandbox'       => $this->get_option('sandbox')
+            'client_id'     => $this->client_id,
+            'client_secret' => $this->client_secret,
+            'sandbox'       => $this->sandbox
         ];
 
         // Initialize Payout
@@ -133,7 +139,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
             ],
             'client_secret'   => [
                 'title'       => __('Client Secret', 'payout-payment-gateway'),
-                'type'        => 'text',
+                'type'        => 'password',
                 'description' => __('Your Client Secret', 'payout-payment-gateway'),
                 'desc_tip'    => true
             ],
@@ -169,7 +175,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
     /**
      * Output for the order received page.
      */
-    public function thankyou_page() {
+    public function thank_you_page_instructions() {
         if ($this->instructions) {
             echo wpautop(wptexturize($this->instructions));
         }
@@ -195,8 +201,8 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
 
     public function process_refund($order_id, $amount = null, $reason = '') {
         // Get neccesary data
-        $client_id     = $this->get_option('client_id');
-        $client_secret = $this->get_option('client_secret');
+        $client_id     = $this->client_id;
+        $client_secret = $this->client_secret;
 
         // Initialize Payout due to accessing get Signature function
 
@@ -234,7 +240,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
 
         ];
 
-        $endpoint = ($this->get_option('sandbox')) ? "https://sandbox.payout.one/api/v1/authorize" : "https://app.payout.one/api/v1/authorize";
+        $endpoint = $this->sandbox ? "https://sandbox.payout.one/api/v1/authorize" : "https://app.payout.one/api/v1/authorize";
 
         $body = wp_json_encode($body);
 
@@ -266,7 +272,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
             'signature'            => $signature
         ];
 
-        $endpoint_r = ($this->get_option('sandbox')) ? "https://sandbox.payout.one/api/v1/refunds" : "https://app.payout.one/api/v1/refunds";
+        $endpoint_r = $this->sandbox ? "https://sandbox.payout.one/api/v1/refunds" : "https://app.payout.one/api/v1/refunds";
         $basicauth  = 'Bearer ' . $token;
 
         $body_r = wp_json_encode($body_r);
@@ -311,9 +317,9 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
         try {
             // Config Payout API
             $config = [
-                'client_id'     => $this->get_option('client_id'),
-                'client_secret' => $this->get_option('client_secret'),
-                'sandbox'       => $this->get_option('sandbox')
+                'client_id'     => $this->client_id,
+                'client_secret' => $this->client_secret,
+                'sandbox'       => $this->sandbox
             ];
 
             // Initialize Payout

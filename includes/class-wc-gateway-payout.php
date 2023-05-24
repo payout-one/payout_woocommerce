@@ -45,52 +45,62 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
     function payout_webhook_callback() {
         $notification = json_decode(file_get_contents('php://input'));
 
+        if (!isset($notification->data->object)
+            || $notification->data->object !== 'checkout'
+            || !isset($notification->data->status)
+            || !isset($notification->data->id)
+            || !isset($notification->external_id)
+            || !isset($notification->type)
+            || !isset($notification->nonce)
+            || !isset($notification->signature)
+        ) {
+            return;
+        }
+
+        $order_id        = $notification->external_id;
+        $checkout_status = $notification->data->status;
+        $checkout_id     = $notification->data->id;
+
         $config = [
             'client_id'     => $this->client_id,
             'client_secret' => $this->client_secret,
             'sandbox'       => $this->sandbox
         ];
+        $payout_client = new Client($config);
 
-        // Initialize Payout
-        $payout = new Client($config);
+        if (!$payout_client->verifySignature([$order_id, $notification->type, $notification->nonce], $notification->signature)) {
+            header_remove();
+            header('Content-Type: application/json');
+            http_response_code(401);
+            echo json_encode(['error' => 'Bad signature'], true);
+            exit;
+        }
 
-        $external_id               = $notification->external_id;
-        $store_payout_order_status = $notification->data->status;
-        $payout_checkout_id        = $notification->data->id;
-        $notification_type         = $notification->data->object;
+        $order = wc_get_order($order_id);
 
-        if ($notification_type != "checkout") {
+        if (!$order) {
             return;
         }
 
-        if (isset($external_id) && isset($store_payout_order_status)) {
-            if (!$payout->verifySignature([$external_id, $notification->type, $notification->nonce], $notification->signature)) {
-                $result = ['error' => "Bad signature"];
-                header_remove();
-                header('Content-Type: application/json');
-                http_response_code(401);
-                echo json_encode($result, true);
-                exit();
-            }
+        $order->update_meta_data('payout_order_status', $checkout_status);
+        $order->update_meta_data('payout_checkout_id', $checkout_id);
+        $order->save();
 
-            $order = wc_get_order($external_id);
+        $current_order_status = $order->get_status();
 
-            update_post_meta($external_id, 'payout_order_status', $store_payout_order_status);
-            update_post_meta($external_id, 'payout_checkout_id', $payout_checkout_id);
+        if ($this->debug_enabled) {
+            WC_Payout_Logger::log('Received payment notification: ' . json_encode($checkout_status));
+        }
 
-            $current_order_status = $order->get_status();
+        $completed_statuses = apply_filters(
+            'payout_webhook_callback_completed_statuses',
+            ['processing', 'packing', 'completed', 'shipping', 'ready-for-pickup', 'picked-up', 'cancelled', 'refunded', 'failed']
+        );
 
-            if ($this->debug_enabled) {
-                WC_Payout_Logger::log('Received payment notification: ' . json_encode($store_payout_order_status));
-            }
-
-            $completed_statuses = ["processing", "packing", "completed", "shipping", "ready-for-pickup", "picked-up", "cancelled", "refunded", "failed"];
-
-            if ($store_payout_order_status == "succeeded") {
-                $order->payment_complete();
-            } else if ($store_payout_order_status == "expired" && !in_array($current_order_status, $completed_statuses)) {
-                $order->update_status('failed', 'Payout : failed');
-            }
+        if ($checkout_status === 'succeeded') {
+            $order->payment_complete();
+        } else if ($checkout_status === 'expired' && !in_array($current_order_status, $completed_statuses)) {
+            $order->update_status('failed', 'Payout : failed');
         }
     }
 

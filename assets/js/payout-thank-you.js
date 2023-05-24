@@ -1,52 +1,54 @@
-jQuery(document).ready(function ($) {
-    jQuery('.woocommerce-order')
-        .addClass('processing')
-        .block({
-            message: null,
-            overlayCSS: {
-                background: '#fff',
-                opacity: 0.25
-            }
-        });
+document.addEventListener('DOMContentLoaded', async () => {
+    const loadingEl = document.createElement('div');
+    loadingEl.classList.add('custom-loading-spinner');
 
-    jQuery('.woocommerce-order').css('opacity', '1');
-    jQuery('.woocommerce-order > *').css('opacity', '0');
-
-    var counter = 0;
-    var checkingTime = 8;
-    var checkInterval = 1000;
-    var oid = payout_thank_you_data.order_id;
-
-    params = {
-        action: 'checkOrderStatus',
-        oid: oid
+    const blockElement = (el) => {
+        el.style.position = 'relative';
+        el.appendChild(loadingEl);
     };
 
-    var checkingInterval = setInterval(function () {
-        $.ajax({
-            type: 'POST',
-            dataType: 'html',
-            url: payout_thank_you_data.ajax_url,
-            data: params,
-            success: function (data) {
-                if (data == 'succeeded' || data == 'processing') {
-                    clearInterval(checkingInterval);
-                    jQuery('.woocommerce-order').addClass('done').unblock();
-                    jQuery('.woocommerce-order > *').css('opacity', '1');
-                }
+    const unblockElement = (el) => {
+        el.style.removeProperty('position');
+        el.removeChild(loadingEl);
+    };
 
-                //console.log(data);
-                counter++;
+    const orderElement = document.querySelector('.woocommerce-order');
+    orderElement.classList.add('processing');
+    blockElement(orderElement);
 
-                // Redirect to payment URL if response is different than "succeeded" or "processing"
-                if (counter > checkingTime) {
-                    clearInterval(checkingInterval);
-                    window.location.replace(payout_thank_you_data.payment_url);
-                }
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.log('Cannot retrieve data.');
-            }
+    const intervalPeriod = 1000; // in miliseconds
+    const maxChecks = 8;
+    let counter = 0;
+
+    const params = new FormData();
+    params.append('action', 'order_payout_status');
+    params.append('oid', payout_thank_you_data.order_id);
+
+    const checkStatusInterval = setInterval(async () => {
+        const response = await fetch(payout_thank_you_data.ajax_url, {
+            method: 'POST',
+            body: params
         });
-    }, checkInterval);
+
+        if (!response.ok) {
+            console.log('Cannot retrieve data.');
+            return;
+        }
+
+        const data = await response.text();
+
+        if (data === 'succeeded' || data === 'processing') {
+            clearInterval(checkStatusInterval);
+            orderElement.classList.remove('processing');
+            orderElement.classList.add('done');
+            unblockElement(orderElement);
+            return;
+        }
+
+        counter++;
+        if (counter > maxChecks) {
+            clearInterval(checkStatusInterval);
+            window.location.replace(payout_thank_you_data.payment_url);
+        }
+    }, intervalPeriod);
 });

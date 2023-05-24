@@ -42,8 +42,8 @@ if (!class_exists('WC_Payout_One')) {
             add_action('init', [$this, 'load_plugin_textdomain']);
             add_filter('woocommerce_payment_gateways', [$this, 'add_to_wc_gateways']);
             add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
-            add_action('wp_ajax_nopriv_checkOrderStatus', [$this, 'checkOrderStatus']);
-            add_action('wp_ajax_checkOrderStatus', [$this, 'checkOrderStatus']);
+            add_action('wp_ajax_nopriv_order_payout_status', [$this, 'order_payout_status']);
+            add_action('wp_ajax_order_payout_status', [$this, 'order_payout_status']);
             add_action('wp_enqueue_scripts', [$this, 'thank_you_scripts']);
             add_action('in_plugin_update_message-' . plugin_basename(__FILE__), 'update_message', 10, 2);
         }
@@ -84,8 +84,8 @@ if (!class_exists('WC_Payout_One')) {
             return array_merge($plugin_links, $links);
         }
 
-        public function checkOrderStatus() {
-            $oid = $_POST["oid"];
+        public function order_payout_status() {
+            $oid = sanitize_text_field($_POST["oid"]);
             echo get_post_meta($oid, 'payout_order_status', true);
             die();
         }

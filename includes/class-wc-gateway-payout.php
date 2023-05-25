@@ -348,7 +348,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
         $order_id   = $order->get_id();
 
         $checkout_data = [
-            'amount'       => $this->float_to_cents($order->get_total()),
+            'amount'       => $order->get_total(),
             'currency'     => $order->get_currency(),
             'customer'     => [
                 'first_name' => $first_name,

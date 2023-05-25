@@ -227,7 +227,9 @@ class Client
             throw new Exception('Payout error: Invalid signature in API response.');
         }
 
-        $log->write('Payout :: verifySignature Refund pass!');
+        if (!is_null($log)) {
+            $log->write('Payout :: verifySignature Refund pass!');
+        }
 
         return $response;
     }

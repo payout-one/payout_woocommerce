@@ -323,82 +323,81 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
         }
     }
 
+    private function float_to_cents($amount) {
+        return (int) round($amount * 100);
+    }
+
+    private function get_products_array($order) {
+        $products = [];
+        foreach ($order->get_items() as $item_id => $item) {
+            $qty          = $item->get_quantity();
+            $unit_price   = $item->get_total() / $qty;
+            $product_data = [
+                'name'       => $item->get_name(),
+                'quantity'   => $qty,
+                'unit_price' => $this->float_to_cents($unit_price)
+            ];
+            $products[] = $product_data;
+        }
+        return $products;
+    }
+
+    private function get_checkout_data($order) {
+        $first_name = $order->get_billing_first_name();
+        $last_name  = $order->get_billing_last_name();
+        $order_id   = $order->get_id();
+
+        $checkout_data = [
+            'amount'       => $this->float_to_cents($order->get_total()),
+            'currency'     => $order->get_currency(),
+            'customer'     => [
+                'first_name' => $first_name,
+                'last_name'  => $last_name,
+                'email'      => $order->get_billing_email(),
+                'phone'      => $order->get_billing_phone()
+            ],
+            'products'     => $this->get_products_array($order),
+            'external_id'  => $order_id,
+            'redirect_url' => $this->get_return_url($order)
+        ];
+
+        // All of these billing details are required by default and empty address line 2 is valid
+        $checkout_data['billing_address'] = [
+            'address_line_1' => $order->get_billing_address_1(),
+            'address_line_2' => $order->get_billing_address_2(),
+            'city'           => $order->get_billing_city(),
+            'country_code'   => $order->get_billing_country(),
+            'name'           => $first_name . ' ' . $last_name,
+            'postal_code'    => $order->get_billing_postcode()
+        ];
+
+        $shipping_address1 = $order->get_shipping_address_1();
+        if (!empty($shipping_address1)) {
+            $checkout_data['shipping_address'] = [
+                'address_line_1' => $shipping_address1,
+                'address_line_2' => $order->get_shipping_address_2(),
+                'city'           => $order->get_shipping_city(),
+                'country_code'   => $order->get_shipping_country(),
+                'name'           => $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(),
+                'postal_code'    => $order->get_shipping_postcode()
+            ];
+        }
+
+        if ($this->get_option('idempotency_key') === 'yes') {
+            $checkout_data['idempotency_key'] = $order_id;
+        }
+
+        return $checkout_data;
+    }
+
     /**
      * Process the payment and return the result
      */
     public function process_payment($order_id) {
         try {
-            // Config Payout API
-            $config = [
-                'client_id'     => $this->client_id,
-                'client_secret' => $this->client_secret,
-                'sandbox'       => $this->sandbox
-            ];
-
-            // Initialize Payout
-            $payout = new Client($config);
-
-            $order       = wc_get_order($order_id);
-            $billingData = $order->get_address();
-
-            $first_name  = $order->get_billing_first_name();
-            $last_name   = $order->get_billing_last_name();
-            $order_total = $order->get_total();
-
-            $products = [];
-            // Get and Loop Over Order Items
-            foreach ($order->get_items() as $item_id => $item) {
-                $product      = $item->get_product();
-                $product_data = [
-                    'name'       => $item->get_name(),
-                    'quantity'   => $item->get_quantity(),
-                    'unit_price' => bcmul($product->get_price(), 100)
-
-                ];
-                array_push($products, $product_data);
-            }
-
-            // Create checkout
-            $checkout_data = [
-                'amount'       => $order_total,
-                'currency'     => $order->get_currency(),
-                'customer'     => [
-                    'first_name' => $first_name,
-                    'last_name'  => $last_name,
-                    'email'      => $order->get_billing_email(),
-                    'phone'      => $order->get_billing_phone()
-                ],
-                'products'     => $products,
-                'external_id'  => $order->get_id(),
-                'redirect_url' => $this->get_return_url($order)
-            ];
-
-            if ($order->get_billing_address_1() && $order->get_billing_city() && $order->get_billing_postcode()) {
-                $checkout_data['billing_address'] = [
-                    'address_line_1' => $order->get_billing_address_1(),
-                    'address_line_2' => $order->get_billing_address_2(),
-                    'city'           => $order->get_billing_city(),
-                    'country_code'   => $order->get_billing_country(),
-                    'name'           => $first_name . ' ' . $last_name,
-                    'postal_code'    => $order->get_billing_postcode()
-
-                ];
-            }
-
-            if ($order->get_shipping_address_1()) {
-                $checkout_data['shipping_address'] = [
-                    'address_line_1' => $order->get_shipping_address_1(),
-                    'address_line_2' => $order->get_shipping_address_2(),
-                    'city'           => $order->get_shipping_city(),
-                    'country_code'   => $order->get_shipping_country(),
-                    'name'           => $first_name . ' ' . $last_name,
-                    'postal_code'    => $order->get_shipping_postcode()
-
-                ];
-            }
-
-            if ('yes' === $this->get_option('idempotency_key')) {
-                $checkout_data['idempotency_key'] = $order->get_id();
+            $order = wc_get_order($order_id);
+            if (!$order) {
+                throw new Exception('Payout error: Order not found.');
             }
 
             if ($order->get_total() == 0) {
@@ -406,25 +405,31 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
                 return false;
             }
 
-            $stored_redirect_url = get_post_meta($order_id, 'payout_redirect_url', true);
+            $checkout_data = $this->get_checkout_data($order);
 
-            if ($stored_redirect_url) {
+            $stored_redirect_url = $order->get_meta('payout_redirect_url');
+
+            $config = [
+                'client_id'     => $this->client_id,
+                'client_secret' => $this->client_secret,
+                'sandbox'       => $this->sandbox
+            ];
+            $payout_client = new Client($config);
+
+            if (!empty($stored_redirect_url)) {
                 $redirect_url = $stored_redirect_url;
             } else {
-                $response = $payout->createCheckout($checkout_data);
+                $response = $payout_client->createCheckout($checkout_data);
                 if ($this->debug_enabled) {
                     WC_Payout_Logger::log('Amount: ' . json_encode($checkout_data['amount']));
                     WC_Payout_Logger::log('External id: ' . json_encode($checkout_data['external_id']));
-
                     $idempotency_key = array_key_exists('idempotency_key', $checkout_data) ? $checkout_data['idempotency_key'] : null;
-
                     WC_Payout_Logger::log('Idempotency key: ' . json_encode($idempotency_key));
-
                     WC_Payout_Logger::log('ID (response): ' . json_encode($response->id));
                     WC_Payout_Logger::log('Payout status (response): ' . json_encode($response->status));
                 }
 
-                if ($response->status == "processing") {
+                if ($response->status === 'processing') {
                     $order->update_status('pending');
                 }
 
@@ -432,17 +437,24 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
 
                 $payment_id = $this->get_option('payment_id');
                 $language   = $this->get_option('language');
+                $query_data = [];
 
-                if ($payment_id != "") {
-                    $redirect_url = $response->checkout_url . '?payment_method=' . $payment_id;
+                if (!empty($payment_id)) {
+                    $query_data['payment_method'] = $payment_id;
                 }
 
-                if ($language != "") {
-                    $redirect_url = $response->checkout_url . '?locale=' . $language;
+                if (!empty($language)) {
+                    $query_data['locale'] = $language;
                 }
+
+                if (count($query_data) > 0) {
+                    $query_op = parse_url($redirect_url, PHP_URL_QUERY) ? '&' : '?';
+                    $redirect_url .= $query_op . http_build_query($query_data);
+                }
+
+                $order->update_meta_data('payout_redirect_url', $redirect_url);
+                $order->save();
             }
-
-            update_post_meta($order_id, 'payout_redirect_url', $redirect_url);
 
             return [
                 'result'   => 'success',
@@ -450,6 +462,9 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
             ];
         } catch (Exception $e) {
             wc_add_notice(sprintf(__('Payment gateway %s : There is a problem, contact your webmaster.', 'payout-payment-gateway'), $this->method_title), 'error');
+            if ($this->debug_enabled) {
+                WC_Payout_Logger::log('Error: ' . $e->getMessage());
+            }
             return false;
         }
     }

@@ -335,7 +335,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
             $product_data = [
                 'name'       => $item->get_name(),
                 'quantity'   => $qty,
-                'unit_price' => $this->float_to_cents($unit_price)
+                'unit_price' => $this->float_to_cents($unit_price) // This has to be in cents, PHP lib doesn't convert it
             ];
             $products[] = $product_data;
         }
@@ -348,8 +348,8 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
         $order_id   = $order->get_id();
 
         $checkout_data = [
-            'amount'       => $this->float_to_cents($order->get_total()),
-            'currency'     => $order->get_currency(),
+            'amount'       => $order->get_total(), // This has to be float because PHP lib converts it to cents
+            'currency' => $order->get_currency(),
             'customer'     => [
                 'first_name' => $first_name,
                 'last_name'  => $last_name,

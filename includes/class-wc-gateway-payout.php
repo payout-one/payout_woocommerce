@@ -224,15 +224,23 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
                 throw new Exception('Payout error: checkout_id missing.');
             }
 
+            if ($order->get_payment_method() !== $this->id) {
+                throw new Exception('Payout error: Payment method mismatch.');
+            }
+
             $refund_amount = is_null($amount) ? 0 : $amount;
 
             // Payout API docs says -> This attribute is obsolete. It's required and you can send it with empty value.
-            $iban                 = '';
+            $iban = '';
+
+            // Empty for now
             $statement_descriptor = '';
 
             $refund_data = [
+                // This has to be in cents, PHP lib doesn't convert it
                 'amount'               => $this->float_to_cents($refund_amount),
                 'checkout_id'          => $order_id,
+                // Lib moves this to 'checkout_id' before making API call
                 'payout_id'            => $checkout_id,
                 'statement_descriptor' => $statement_descriptor,
                 'iban'                 => $iban,

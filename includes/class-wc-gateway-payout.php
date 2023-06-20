@@ -216,16 +216,16 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
         try {
             $order = wc_get_order($order_id);
             if (!$order) {
-                throw new Exception('Payout error: Order not found.');
+                throw new Exception('Payout error: ' . __('Order not found', 'payout-payment-gateway'));
             }
 
             $checkout_id = $order->get_meta('payout_checkout_id');
             if (empty($checkout_id)) {
-                throw new Exception('Payout error: checkout_id missing.');
+                throw new Exception('Payout error: ' . __('checkout_id missing', 'payout-payment-gateway'));
             }
 
             if ($order->get_payment_method() !== $this->id) {
-                throw new Exception('Payout error: Payment method mismatch.');
+                throw new Exception('Payout error: ' . __('Payment method mismatch', 'payout-payment-gateway'));
             }
 
             $refund_amount = is_null($amount) ? 0 : $amount;

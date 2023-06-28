@@ -213,113 +213,59 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
     }
 
     public function process_refund($order_id, $amount = null, $reason = '') {
-        // Get neccesary data
-        $client_id     = $this->client_id;
-        $client_secret = $this->client_secret;
+        try {
+            $order = wc_get_order($order_id);
+            if (!$order) {
+                throw new Exception('Payout error: ' . __('Order not found', 'payout-payment-gateway'));
+            }
 
-        // Initialize Payout due to accessing get Signature function
+            $checkout_id = $order->get_meta('payout_checkout_id');
+            if (empty($checkout_id)) {
+                throw new Exception('Payout error: ' . __('checkout_id missing', 'payout-payment-gateway'));
+            }
 
-        // Checkout id
-        $checkout_id = get_post_meta($order_id, 'payout_checkout_id', true);
+            if ($order->get_payment_method() !== $this->id) {
+                throw new Exception('Payout error: ' . __('Payment method mismatch', 'payout-payment-gateway'));
+            }
 
-        // nonce
-        $bytes = random_bytes(5);
-        $nonce = bin2hex($bytes);
+            $refund_amount = is_null($amount) ? 0 : $amount;
 
-        // Statement - for now empty string
-        $statement = '';
+            // Payout API docs says -> This attribute is obsolete. It's required and you can send it with empty value.
+            $iban = '';
 
-        // Order object - to exclude some data
-        $order = wc_get_order($order_id);
+            // Empty for now
+            $statement_descriptor = '';
 
-        // Necessary data for signature
-        $amount      = bcmul($amount, 100);
-        $currency    = $order->get_currency();
-        $external_id = $order_id;
+            $refund_data = [
+                // This has to be in cents, PHP lib doesn't convert it
+                'amount'               => $this->float_to_cents($refund_amount),
+                'checkout_id'          => $order_id,
+                // Lib moves this to 'checkout_id' before making API call
+                'payout_id'            => $checkout_id,
+                'statement_descriptor' => $statement_descriptor,
+                'iban'                 => $iban,
+                'currency'             => $order->get_currency()
+            ];
 
-        // Temporrary assign there an order ID
-        $iban = "";
+            $config = [
+                'client_id'     => $this->client_id,
+                'client_secret' => $this->client_secret,
+                'sandbox'       => $this->sandbox
+            ];
+            $payout_client = new Client($config);
 
-        // Creating signature from neccesary data
-        $string_to_hash = [$amount, $currency, $external_id, $iban, $nonce, $client_secret];
-        $message        = implode('|', $string_to_hash);
+            $response = $payout_client->createRefund($refund_data, null);
 
-        $signature = hash('sha256', pack('A*', $message));
+            if ($this->debug_enabled) {
+                WC_Payout_Logger::log('Refund response: ' . json_encode($response));
+            }
 
-        // RETRIEVE AN SECURITY TOKEN
-        $body = [
-            'client_id'     => $client_id,
-            'client_secret' => $client_secret
-
-        ];
-
-        $endpoint = $this->sandbox ? "https://sandbox.payout.one/api/v1/authorize" : "https://app.payout.one/api/v1/authorize";
-
-        $body = wp_json_encode($body);
-
-        $options = [
-            'body'        => $body,
-            'headers'     => [
-                'Content-Type' => 'application/json',
-                'Accept'       => 'application/json'
-            ],
-            'timeout'     => 60,
-            'method'      => 'POST',
-            'redirection' => 5,
-            'blocking'    => true,
-            'httpversion' => '1.0',
-            'sslverify'   => true,
-            'data_format' => 'body'
-        ];
-
-        $data    = wp_remote_request($endpoint, $options);
-        $decoded = json_decode($data['body']);
-        $token   = $decoded->token;
-
-        // REFUND REQUEST
-        $body_r = [
-            'amount'               => $amount,
-            'checkout_id'          => $checkout_id,
-            'statement_descriptor' => $statement,
-            'nonce'                => $nonce,
-            'signature'            => $signature
-        ];
-
-        $endpoint_r = $this->sandbox ? "https://sandbox.payout.one/api/v1/refunds" : "https://app.payout.one/api/v1/refunds";
-        $basicauth  = 'Bearer ' . $token;
-
-        $body_r = wp_json_encode($body_r);
-
-        $options_r = [
-            'body'        => $body_r,
-            'headers'     => [
-                'Content-Type'  => 'application/json',
-                'Authorization' => $basicauth,
-                'Accept'        => 'application/json'
-            ],
-            'timeout'     => 60,
-            'redirection' => 5,
-            'blocking'    => true,
-            'httpversion' => '1.0',
-            'sslverify'   => true,
-            'data_format' => 'body'
-        ];
-
-        $data_r = wp_remote_post($endpoint_r, $options_r);
-
-        $response_message = $data_r['response']['message'];
-        $response_code    = $data_r['response']['code'];
-        $error_message    = $data_r['body'];
-
-        if ($this->debug_enabled) {
-            WC_Payout_Logger::log('Refund response:' . json_encode($data_r));
-        }
-
-        if (($response_message == "OK") && ($response_code == 200)) {
             return true;
-        } else {
-            return new WP_Error('error', __('Refund failed.', 'woocommerce') . '- ' . $error_message);
-            return false;
+        } catch (Exception $e) {
+            if ($this->debug_enabled) {
+                WC_Payout_Logger::log('Error: ' . $e->getMessage());
+            }
+            return new WP_Error('error', __('Refund failed.', 'woocommerce') . '- ' . $e->getMessage());
         }
     }
 

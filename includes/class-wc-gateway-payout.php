@@ -147,7 +147,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
             'client_id'       => [
                 'title'       => __('Client ID', 'payout-payment-gateway'),
                 'type'        => 'text',
-                'description' => __('Your Cilent ID', 'payout-payment-gateway'),
+                'description' => __('Your Client ID', 'payout-payment-gateway'),
                 'desc_tip'    => true
             ],
             'client_secret'   => [
@@ -263,9 +263,9 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
             return true;
         } catch (Exception $e) {
             if ($this->debug_enabled) {
-                WC_Payout_Logger::log('Error: ' . $e->getMessage());
+                WC_Payout_Logger::log($e->getMessage());
             }
-            return new WP_Error('error', __('Refund failed.', 'woocommerce') . '- ' . $e->getMessage());
+            return new WP_Error('error', __('Refund failed.', 'woocommerce') . ' - ' . $e->getMessage());
         }
     }
 
@@ -409,7 +409,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
         } catch (Exception $e) {
             wc_add_notice(sprintf(__('Payment gateway %s : There is a problem, contact your webmaster.', 'payout-payment-gateway'), $this->method_title), 'error');
             if ($this->debug_enabled) {
-                WC_Payout_Logger::log('Error: ' . $e->getMessage());
+                WC_Payout_Logger::log($e->getMessage());
             }
             return false;
         }

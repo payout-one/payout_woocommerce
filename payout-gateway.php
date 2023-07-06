@@ -10,10 +10,10 @@
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2023, Seduco
- * Requires at least: 4.1.0
+ * Requires at least: 5.0.19
  * Tested up to: 6.2.2
- * WC tested up to: 7.8.1
- * WC requires at least: 3.0.0
+ * WC tested up to: 7.8.2
+ * WC requires at least: 4.0.1
  * @package   payout-payment-gateway
  * @author    Seduco
  * @category  Admin

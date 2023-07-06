@@ -1,7 +1,7 @@
 === Payout payment gateway ===
 Contributors: Seduco
 Tags: payout, gateway, slovakia, payment, payment gateway, platobná brána, payout payment gateway
-Requires at least: 4.1.0
+Requires at least: 5.0.19
 Tested up to: 6.2.2
 Stable tag: 1.1.0
 Donate link: https://payout.one/

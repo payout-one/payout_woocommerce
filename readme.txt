@@ -28,7 +28,7 @@ Všetko čo ponúkame je jednoduché, finančne dostupné či posilňujúce výk
 
 - **18 jazykov:** Angličtina, Buhlarčina, Čeština, Chorvátčina, Estónčina, Gréčtina, Litovčina, Lotyština, Maďarčina, Nemčina, Poľština, Rumunčina, Ruština, Slovenčina, Slovinčina, Španielčina, Taliančina, Ukrajinčina
 
-- **6 mien:** EUR, CZK, PLN, RON, HRK, HUF
+- **6 mien:** EUR, CZK, PLN, RON, HUF, BGN
 
 ### Všetky platobné metódy na jednom mieste
 

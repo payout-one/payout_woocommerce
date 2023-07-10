@@ -12,16 +12,56 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Platobný modul pre WooCommerce, ktorý spája Váš e-shop s platobnou bránou Payout.
 
 == Description ==
-Prijímajte platby od Vašich zákazníkov bezpečne a pohodlne cez platobnú bránu Payout. Plugin je plne kompatibilný so systémom WooCommerce.
+**Rýchla, jednoduchá a variabilná platobná brána**
 
-Hlavné črty:
-* Jednoduchá inštalácia
-* Pravidelné aktualizácie a podpora pluginu
-* Plugin podporuje ostrú a testovaciu prevádzku
-* Funguje výborne so službou Superfaktúra.sk
-* Automaticky aktualizuje stavy objednávok vo WooCommerce na základe typu platby
-* Schopnosť nastaviť preddefinovaný typ platby po presmerovaní na platobnú bránu
-* Plugin je momentálne lokalizovaný do SK a EN jazyka
+Ponúkame vám oficiálny a bezplatný plugin na prepojenie platobnej brány Payout k vášmu e-shopu.
+
+## Výhody Payout
+
+Pomôžeme vám zvýšiť efektivitu platobných procesov a zlepšiť zákaznícku skúsenosť. Spracovali sme už viac ako **550 miliónov eur** v **14 krajinách Európy**. Máme viac ako **600 000** spokojných zákazníkov. A s našimi klientmi spoločne rastieme každý mesiac o **10 - 12%**.
+
+Všetko čo ponúkame je jednoduché, finančne dostupné či posilňujúce výkon a efektivitu firiem. Platobná brána Payout je cenovo dostupná pre každého. Základná cena je **0,99% +0,20€** (\*Možnosť individuálnej cenovej ponuky).
+
+## Základné funkcie platobnej brány
+
+### Jednoduchá expanzia na zahraničné trhy
+
+- **18 jazykov:** Angličtina, Buhlarčina, Čeština, Chorvátčina, Estónčina, Gréčtina, Litovčina, Lotyština, Maďarčina, Nemčina, Poľština, Rumunčina, Ruština, Slovenčina, Slovinčina, Španielčina, Taliančina, Ukrajinčina
+
+- **6 mien:** EUR, CZK, PLN, RON, HRK, HUF
+
+### Všetky platobné metódy na jednom mieste
+
+- Platba kartou
+- Google Pay a Apple Pay
+- QR kód
+- Bankové tlačidlá a okamžité prevody
+- Buy Now, Pay Later
+
+### Prispôsobenie brány
+
+Naša platobná brána vám umožní prispôsobiť si vzhľad podľa vašich preferencií a potrieb. Môžete si vložiť svoje vlastné logo, aby sa platobná brána stala súčasťou vášho brandingu. Okrem toho si viete prispôsobiť farebný dizajn platobnej brány tak, aby sa dokonale hodili k celkovej vizuálnej identite.
+
+### Rozširujúce funkcie
+
+- Vyžiadanie si platby cez link
+
+### Prehľadná administrácia
+
+Výpisy transakcií sú vo formátoch PDF a XML, čo účtovníkom ušetrí enormné množstvo času pri importe transakcií do účtovných systémov.
+
+### Pre koho je náš plugin určený?
+
+Platobná brána je určená pre každého, kto už prevádzkuje alebo len začína s online obchodom a chce pre svojich zákazníkov zabezpečiť bezpečné a pohodlné platby, zlepšiť užívateľský zážitok a zvýšiť konverziu.
+
+### Prečo si vybrať práve tento plugin?
+
+- Posilníme a **zvýšime výkon a efektivitu Vášho podnikania**.
+- **Ponúkame Vám nadštandardnú klientskú podporu** , pretože na názoroch a komunikácii s našimi klientmi nám záleží.
+- Naše **technológie** udržujeme neustále **moderné a bezpečné**.
+- Tvoríme pre Vás **riešenia na mieru**.
+- **Peniaze** , ktoré Vám zákazníci pošlú, máte **rýchlo k dispozícii** a môžete s nimi narábať tak, ako potrebujete.
+- Pri nedokončenom nákupe zákazníkovi posielame automatický mail pre opätovné dokončenie platby.
 
 == Installation ==
 1. Nahrajte obsah zložky pluginu 'payout-gateway' po rozbalení  do '/wp-content/plugins/' priečinka, alebo nainštalujte plugin priamo cez rozhranie Wordpressu v sekcii Pluginy.

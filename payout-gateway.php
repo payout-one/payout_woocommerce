@@ -6,7 +6,7 @@
  * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.1.0
+ * Version: 1.1.1
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2023, Seduco
@@ -42,6 +42,7 @@ if (!class_exists('WC_Payout_One')) {
             require_once __DIR__ . '/includes/class-wc-gateway-payout.php';
 
             add_action('init', [$this, 'load_plugin_textdomain']);
+            add_action('before_woocommerce_init', 'declare_hpos_compatibility');
             add_filter('woocommerce_payment_gateways', [$this, 'add_to_wc_gateways']);
             add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
             add_action('wp_ajax_nopriv_order_payout_status', [$this, 'order_payout_status']);
@@ -55,6 +56,12 @@ if (!class_exists('WC_Payout_One')) {
                 self::$instance = new self;
             }
             return self::$instance;
+        }
+
+        public function declare_hpos_compatibility() {
+            if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+            }
         }
 
         public function load_plugin_textdomain() {
@@ -88,8 +95,14 @@ if (!class_exists('WC_Payout_One')) {
 
         public function order_payout_status() {
             $oid = sanitize_text_field($_POST["oid"]);
-            echo get_post_meta($oid, 'payout_order_status', true);
-            die();
+            if (empty($oid)) {
+                die;
+            }
+            $order = wc_get_order($oid);
+            if ($order) {
+                echo $order->get_meta('payout_order_status');
+            }
+            die;
         }
 
         public function thank_you_scripts() {
@@ -110,7 +123,7 @@ if (!class_exists('WC_Payout_One')) {
                 return;
             }
 
-            $payment_url = get_post_meta($order_id, 'payout_redirect_url', true);
+            $payment_url = $order->get_meta('payout_redirect_url');
             if ($payment_url === false) {
                 $payment_url = $order->get_checkout_payment_url();
             }

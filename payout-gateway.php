@@ -42,7 +42,7 @@ if (!class_exists('WC_Payout_One')) {
             require_once __DIR__ . '/includes/class-wc-gateway-payout.php';
 
             add_action('init', [$this, 'load_plugin_textdomain']);
-            add_action('before_woocommerce_init', 'declare_hpos_compatibility');
+            add_action('before_woocommerce_init', [$this, 'declare_hpos_compatibility']);
             add_filter('woocommerce_payment_gateways', [$this, 'add_to_wc_gateways']);
             add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'plugin_action_links']);
             add_action('wp_ajax_nopriv_order_payout_status', [$this, 'order_payout_status']);

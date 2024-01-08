@@ -2,8 +2,8 @@
 Contributors: Seduco
 Tags: payout, gateway, slovakia, payment, payment gateway, platobná brána, payout payment gateway
 Requires at least: 5.0.19
-Tested up to: 6.2.2
-Stable tag: 1.1.1
+Tested up to: 6.4.2
+Stable tag: 1.1.2
 Donate link: https://payout.one/
 Requires PHP: 7.0
 License: GPLv2 or later
@@ -79,6 +79,9 @@ Navštívte https://payout.one/faq/ pre podporu a často kladené otázky.
 3. Rozhranie platobnej brány
 
 == Changelog ==
+= 1.1.2 =
+* Add Woo Blocks Checkout compatibility
+
 = 1.1.1 =
 * Add HPOS compatibility
 

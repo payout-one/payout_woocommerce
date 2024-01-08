@@ -6,7 +6,7 @@
  * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.1.1
+ * Version: 1.1.2
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2023, Seduco
@@ -32,6 +32,9 @@ if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get
 }
 
 if (!class_exists('WC_Payout_One')) {
+    defined('WC_PAYOUT_GATEWAY_ID') or define('WC_PAYOUT_GATEWAY_ID', 'payout_gateway');
+    defined('WC_PAYOUT_GATEWAY_VERSION') or define('WC_PAYOUT_GATEWAY_VERSION', '1.1.2');
+
     class WC_Payout_One {
 
         private static $instance = false;
@@ -48,7 +51,7 @@ if (!class_exists('WC_Payout_One')) {
             add_action('wp_ajax_nopriv_order_payout_status', [$this, 'order_payout_status']);
             add_action('wp_ajax_order_payout_status', [$this, 'order_payout_status']);
             add_action('wp_enqueue_scripts', [$this, 'thank_you_scripts']);
-            add_action('in_plugin_update_message-' . plugin_basename(__FILE__), 'update_message', 10, 2);
+            add_action('in_plugin_update_message-' . plugin_basename(__FILE__), [$this, 'update_message'], 10, 2);
         }
 
         public static function get_instance() {
@@ -87,7 +90,7 @@ if (!class_exists('WC_Payout_One')) {
          */
         public function plugin_action_links($links) {
             $plugin_links = [
-                '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=payout_gateway') . '">' . __('Settings', 'payout-payment-gateway') . '</a>'
+                '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=' . WC_PAYOUT_GATEWAY_ID) . '">' . __('Settings', 'payout-payment-gateway') . '</a>'
             ];
 
             return array_merge($plugin_links, $links);
@@ -119,7 +122,7 @@ if (!class_exists('WC_Payout_One')) {
             $order_id = $wp->query_vars['order-received'];
             $order    = wc_get_order($order_id);
 
-            if (!$order || $order->get_payment_method() !== 'payout_gateway') {
+            if (!$order || $order->get_payment_method() !== WC_PAYOUT_GATEWAY_ID) {
                 return;
             }
 
@@ -141,7 +144,42 @@ if (!class_exists('WC_Payout_One')) {
             );
             wp_enqueue_script('payout-thank-you-script');
         }
+
+        public static function plugin_url() {
+            return untrailingslashit(plugins_url('/', __FILE__));
+        }
+
+        public static function plugin_abspath() {
+            return trailingslashit(plugin_dir_path(__FILE__));
+        }
+
+        /**
+         * Registers WooCommerce Blocks integration.
+         */
+        public static function register_block_support() {
+            add_action('woocommerce_blocks_loaded', [__CLASS__, 'gateway_payout_woocommerce_block_support']);
+        }
+
+        /**
+         * Loads WooCommerce Blocks integration.
+         */
+        public static function gateway_payout_woocommerce_block_support() {
+            if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                require_once __DIR__ . '/includes/blocks/class-wc-gateway-payout-blocks.php';
+
+                add_action(
+                    'woocommerce_blocks_payment_method_type_registration',
+                    function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
+                        $payment_method_registry->register(new WC_Payout_Gateway_Blocks_Support());
+                    }
+                );
+            }
+        }
     }
 
     add_action('plugins_loaded', ['WC_Payout_One', 'get_instance'], 11);
+
+    // Hook in Blocks integration. This action is called in a callback on plugins_loaded,
+    // so current plugin class implementation is too late
+    WC_Payout_One::register_block_support();
 }

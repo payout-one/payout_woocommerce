@@ -15,10 +15,10 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
     public $sandbox;
 
     public function __construct() {
-        $this->id                 = 'payout_gateway';
+        $this->id                 = WC_PAYOUT_GATEWAY_ID;
         $this->has_fields         = false;
         $this->method_title       = __('Payout', 'payout-payment-gateway');
-        $this->method_description = __('Payout gateway integration.', 'payout-payment-gateway') . '<br><strong style="color:green;">' . __('Notification URL: ', 'payout-payment-gateway') . '</strong>' . add_query_arg('wc-api', 'payout_gateway', home_url() . '/');
+        $this->method_description = __('Payout gateway integration.', 'payout-payment-gateway') . '<br><strong style="color:green;">' . __('Notification URL: ', 'payout-payment-gateway') . '</strong>' . add_query_arg('wc-api', WC_PAYOUT_GATEWAY_ID, home_url() . '/');
         $this->supports           = ['refunds'];
 
         // Load the settings.

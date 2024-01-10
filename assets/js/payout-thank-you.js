@@ -12,7 +12,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         el.removeChild(loadingEl);
     };
 
-    const orderElement = document.querySelector('.woocommerce-order');
+    const orderElement =
+        document.querySelector('.woocommerce-order') ??
+        document.querySelector('main') ??
+        document.querySelector('body');
     orderElement.classList.add('processing');
     blockElement(orderElement);
 

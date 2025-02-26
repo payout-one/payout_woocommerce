@@ -275,9 +275,21 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
 
     private function get_products_array($order) {
         $products = [];
-        foreach ($order->get_items() as $item_id => $item) {
-            $qty          = $item->get_quantity();
-            $unit_price   = $item->get_total() / $qty;
+
+        // for products only, keep 'line_item' only
+        $item_types = array('line_item', 'fee', 'shipping', 'tax', 'coupon');
+        
+        foreach ($order->get_items( $item_types ) as $item_id => $item) {
+            $qty = $item->get_quantity();
+            
+            if ($item instanceof WC_Order_Item_Product) {
+                $unit_price = $item->get_subtotal() / $qty;
+            } elseif ($item instanceof WC_Order_Item_Coupon) {
+                $unit_price = -abs($item->get_discount());
+            } else {
+                $unit_price = $item->get_total();
+            }
+            
             $product_data = [
                 'name'       => $item->get_name(),
                 'quantity'   => $qty,
@@ -285,6 +297,7 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
             ];
             $products[] = $product_data;
         }
+
         return $products;
     }
 

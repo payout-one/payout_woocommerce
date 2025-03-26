@@ -36,8 +36,8 @@ jobs:
 
       - name: Start deploy task
         env:
-          SEMAPHORE_ORG_URL: ${{ secrets.SEMAPHORE_CI_TOKEN }}
-          SEMAPHORE_TASK_ID: ${{ secrets.SEMAPHORE_CI_TOKEN }}
+          SEMAPHORE_ORG_URL: ${{ secrets.SEMAPHORE_ORG_URL }}
+          SEMAPHORE_TASK_ID: ${{ secrets.SEMAPHORE_TASK_ID }}
           SEMAPHORE_CI_TOKEN: ${{ secrets.SEMAPHORE_CI_TOKEN }}
         run: |
           curl -X POST --location "https://${SEMAPHORE_ORG_URL}.semaphoreci.com/api/v1alpha/tasks/${SEMAPHORE_TASK_ID}/run_now" \

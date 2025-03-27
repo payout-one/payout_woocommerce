@@ -43,4 +43,4 @@ jobs:
           curl -X POST --location "https://${SEMAPHORE_ORG_URL}.semaphoreci.com/api/v1alpha/tasks/${SEMAPHORE_TASK_ID}/run_now" \
           -H "Authorization: Token ${SEMAPHORE_CI_TOKEN}" \
           -H "Content-Type: application/json" \
-          -d '{"branch": "master", "pipeline_file": ".semaphore/semaphore.yml", "parameters": {"PAYOUT_PLUGIN_TAG": "'"$TAG_NAME"'"}}'
+          -d '{"parameters": {"PAYOUT_PLUGIN_TAG": "'"$TAG_NAME"'"}}'

@@ -6,12 +6,12 @@
  * Description: Official Payout payment gateway plugin for WooCommerce.
  * Author: Seduco
  * Author URI: https://www.seduco.sk/
- * Version: 1.1.2
+ * Version: 1.1.3
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
  * Copyright (c) 2023, Seduco
  * Requires at least: 5.0.19
- * Tested up to: 6.4.2
+ * Tested up to: 6.7.2
  * WC tested up to: 8.4.0
  * WC requires at least: 4.0.1
  * @package   payout-payment-gateway
@@ -33,7 +33,7 @@ if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get
 
 if (!class_exists('WC_Payout_One')) {
     defined('WC_PAYOUT_GATEWAY_ID') or define('WC_PAYOUT_GATEWAY_ID', 'payout_gateway');
-    defined('WC_PAYOUT_GATEWAY_VERSION') or define('WC_PAYOUT_GATEWAY_VERSION', '1.1.2');
+    defined('WC_PAYOUT_GATEWAY_VERSION') or define('WC_PAYOUT_GATEWAY_VERSION', '1.1.3');
 
     class WC_Payout_One {
 

@@ -4,20 +4,20 @@
  * Plugin Name: Payout payment gateway
  * Plugin URI: https://www.payout.one/
  * Description: Official Payout payment gateway plugin for WooCommerce.
- * Author: Seduco
- * Author URI: https://www.seduco.sk/
- * Version: 1.1.4
+ * Author: Payout
+ * Author URI: https://payout.one/
+ * Version: 1.1.5
  * Text Domain: payout-payment-gateway
  * Domain Path: languages
- * Copyright (c) 2023, Seduco
+ * Copyright (c) 2023, Payout
  * Requires at least: 5.0.19
  * Tested up to: 6.7.2
  * WC tested up to: 8.4.0
  * WC requires at least: 4.0.1
  * @package   payout-payment-gateway
- * @author    Seduco
+ * @author    Payout
  * @category  Admin
- * @copyright Copyright (c) 2023, Seduco
+ * @copyright Copyright (c) 2023, Payout
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  *
  */

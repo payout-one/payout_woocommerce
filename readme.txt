@@ -3,7 +3,7 @@ Contributors: Seduco
 Tags: payout, gateway, slovakia, payment, payment gateway, platobná brána, payout payment gateway
 Requires at least: 5.0.19
 Tested up to: 6.7.2
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 Donate link: https://payout.one/
 Requires PHP: 7.0
 License: GPLv2 or later
@@ -79,6 +79,9 @@ Navštívte https://payout.one/faq/ pre podporu a často kladené otázky.
 3. Rozhranie platobnej brány
 
 == Changelog ==
+= 1.1.4 =
+* Fix - do not use get_total() for item of type WC_Order_Item_Tax
+
 = 1.1.3 =
 * Include all wc order item types in product
 

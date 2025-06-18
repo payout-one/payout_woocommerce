@@ -286,6 +286,8 @@ class WC_Payout_Gateway extends WC_Payment_Gateway {
                 $unit_price = $item->get_subtotal() / $qty;
             } elseif ($item instanceof WC_Order_Item_Coupon) {
                 $unit_price = -abs($item->get_discount());
+            } elseif ($item instanceof WC_Order_Item_Tax) {
+                $unit_price = $item->get_tax_total() + $item->get_shipping_tax_total();
             } else {
                 $unit_price = $item->get_total();
             }

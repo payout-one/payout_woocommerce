@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Payout payment gateway\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-30 12:03+0000\n"
-"PO-Revision-Date: 2023-06-28 11:17+0200\n"
+"PO-Revision-Date: 2025-06-18 13:24+0200\n"
 "Last-Translator: \n"
 "Language-Team: Slovenčina\n"
 "Language: sk_SK\n"
@@ -58,8 +58,8 @@ msgid "https://www.payout.one/"
 msgstr "https://www.payout.one/"
 
 #. Author URI of the plugin
-msgid "https://www.seduco.sk/"
-msgstr "https://www.seduco.sk/"
+msgid "https://payout.one/"
+msgstr "https://payout.one/"
 
 msgid "Instructions"
 msgstr "Inštrukcie"
@@ -91,9 +91,6 @@ msgstr "Platobná metóda"
 msgid "Payment method description that the customer will see on your checkout."
 msgstr "Popis spôsobu platby, ktorý sa zákazníkovi zobrazí pri vašej pokladni."
 
-msgid "Payout"
-msgstr "Payout"
-
 msgid ""
 "Payout does not support refunds in this way. To transfer the refund to the "
 "Payout system, change the status of the order to refunded."
@@ -112,8 +109,8 @@ msgid "Production"
 msgstr "Produkcia"
 
 #. Author of the plugin
-msgid "Seduco"
-msgstr "Seduco"
+msgid "Payout"
+msgstr "Payout"
 
 msgid "Send idempotency key"
 msgstr "Zasielať idempotency key"
